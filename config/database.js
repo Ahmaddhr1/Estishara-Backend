@@ -1,21 +1,20 @@
-require('dotenv').config(); 
-const { Sequelize } = require('sequelize');
+require("dotenv").config({ path: '../.env' }); 
+const { Sequelize } = require("sequelize");
 
-// Use Neon database connection URL from .env
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
+  dialect: "postgres",
   dialectOptions: {
     ssl: {
-      require: true, // Required for Neon
+      require: true,
       rejectUnauthorized: false,
     },
   },
-  logging: false, // Disable logging for clean output
+  logging: false,
 });
 
-// Test the connection
-sequelize.authenticate()
-  .then(() => console.log('✅ Connected to Neon PostgreSQL!'))
-  .catch(err => console.error('❌ Connection Error:', err));
+sequelize
+  .authenticate()
+  .then(() => console.log("✅ Connected to Neon PostgreSQL!"))
+  .catch((err) => console.error("❌ Connection Error:", err));
 
 module.exports = sequelize;
