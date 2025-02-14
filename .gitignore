@@ -39,3 +39,4 @@ package-lock.json
 
 # Debug files
 *.log
+.vercel
