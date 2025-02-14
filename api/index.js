@@ -1,5 +1,15 @@
-// api/index.js
-const app = require('./app.js');  // Import the Express app from app.js
-const serverless = require('serverless-http');  // Import serverless-http
+const express = require('express');
+const app = express();
 
-module.exports.handler = serverless(app);  // Wrap your Express app in serverless function
+
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.send('Hello, world!');
+});
+
+
+// Your routes and middleware
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
