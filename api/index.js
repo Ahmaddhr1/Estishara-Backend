@@ -11,7 +11,6 @@ app.use(cors());
 
 app.get("/", (req, res) => {
   res.send("Hello, world!");
-  console.log("DATABASE",process.env.DATABASE_URL);
 });
 
 app.get("/users", async (req, res) => {
