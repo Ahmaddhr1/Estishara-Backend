@@ -3,7 +3,7 @@ const app = express();
 
 const cors = require("cors");
 
-//const User = require("../models/User.js");
+const User = require("../models/User.js");
 
 app.use(express.json());
 app.use(cors());
