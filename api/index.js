@@ -3,7 +3,7 @@ const app = express();
 
 const cors = require("cors");
 
-const User = require("../models/User.js");
+const User = require("../models/Patient.js");
 
 app.use(express.json());
 app.use(cors());
@@ -12,7 +12,7 @@ app.get("/", (req, res) => {
   res.send("Helllooo estisharaaaaaaaaaaaaa");
 });
 
-app.get("/users", async (req, res) => {
+app.get("/sign-up", async (req, res) => {
   try {
     const users = await User.findAll();
     res.json(users);
@@ -21,11 +21,10 @@ app.get("/users", async (req, res) => {
   }
 });
 
-app.get("/ahmad", (req,res) => {
+app.get("/ahmad", (req, res) => {
   res.send("Helllooo ahmaddd");
-})
+});
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
-
