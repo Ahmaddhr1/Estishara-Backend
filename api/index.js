@@ -5,14 +5,18 @@ const cors = require("cors");
 
 const User = require("../models/Patient.js");
 
+
+const doctorRoutes = require('../routes/DoctorRoutes.js');
+
 app.use(express.json());
 app.use(cors());
+app.use('/doctor', doctorRoutes);
 
 app.get("/", (req, res) => {
   res.send("Helllooo estisharaaaaaaaaaaaaa");
 });
 
-app.get("/sign-up", async (req, res) => {
+app.get("/", async (req, res) => {
   try {
     const users = await User.findAll();
     res.json(users);
