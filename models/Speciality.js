@@ -1,27 +1,16 @@
-// models/Speciality.js
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const Speciality = sequelize.define(
-  "Speciality",
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    logo: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+const specialitySchema = new Schema({
+  name: { 
+    type: String, 
+    required: true, 
+    unique: true 
   },
-  {
-    timestamps: true,
+  description: { 
+    type: String 
   }
-);
+}, { timestamps: true });
 
+const Speciality = mongoose.model('Speciality', specialitySchema);
 module.exports = Speciality;

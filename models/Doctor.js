@@ -1,98 +1,106 @@
-// models/Doctor.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
+const doctorSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    phoneNumber: {
+      type: Number,
+      required: true,
+      unique: true,
+    },
+    age: {
+      type: Number,
+      required: true,
+    },
+    availability: {
+      type: Boolean,
+      default: true,
+    },
+    respondTime: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    documents: {
+      type: [String],
+      default: [],
+    },
+    consultationFees: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
+    rating: {
+      type: String,
+      enum: ["0", "1", "2", "3", "4", "5"],
+    },
+    workingAt: {
+      type: String,
+      required: true,
+    },
+    education: {
+      type: String,
+      required: true,
+    },
+    isEmergencyAvailable: {
+      type: Boolean,
+      default: false,
+    },
+    treated: {
+      type: String,
+      required: true,
+    },
+    service: {
+      type: String,
+      required: true,
+    },
+    experience: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    inConsultation: {
+      type: Boolean,
+      default: false,
+    },
+    isPendingDoctor: {
+      type: Boolean,
+      default: true,
+    },
+    profilePic: {
+      type: String,
+    },
 
-const Doctor = sequelize.define('Doctor', {
-  id: { 
-    type: DataTypes.UUID, 
-    defaultValue: DataTypes.UUIDV4, 
-    primaryKey: true 
+    // Relationships
+    // specialityId: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: 'Speciality',
+    //   required: false
+    // },
+    // reviews: {
+    //   type: [Schema.Types.ObjectId],
+    //   ref: 'Review',
+    //   default: []
+    // },
+    // pendingConsultation: {
+    //   type: [Schema.Types.ObjectId],
+    //   ref: 'Consultation',
+    //   default: []
+    // }
   },
-  name: { 
-    type: DataTypes.STRING, 
-    allowNull: false 
-  },
-  email: { 
-    type: DataTypes.STRING, 
-    allowNull: false, 
-    unique: true 
-  },
-  phoneNumber: {
-    type: DataTypes.INTEGER, 
-    allowNull: false, 
-    unique: true 
-  },
-  age: { 
-    type: DataTypes.INTEGER 
-  },
-  specialityId: {
-    type: DataTypes.UUID,
-    allowNull: true,
-    references: {
-      model: 'Specialities',
-      key: 'id'
-    }
-  },
-  availability: { 
-    type: DataTypes.BOOLEAN, 
-    defaultValue: true 
-  },
-  respondTime: { 
-    type: DataTypes.INTEGER 
-  },
-  documents: { 
-    type: DataTypes.ARRAY(DataTypes.STRING)
-  },
-  consultationFees: { 
-    type: DataTypes.INTEGER 
-  },
-  rating: { 
-    type: DataTypes.ENUM('0', '1', '2', '3', '4', '5') 
-  },
-  workingAt: { 
-    type: DataTypes.STRING 
-  },
-  education: { 
-    type: DataTypes.STRING 
-  },
-  isEmergencyAvailable: { 
-    type: DataTypes.BOOLEAN, 
-    defaultValue: false 
-  },
-  treated: { 
-    type: DataTypes.STRING 
-  },
-  service: { 
-    type: DataTypes.STRING 
-  },
-  reviews: { 
-    type: DataTypes.ARRAY(DataTypes.UUID)
-  },
-  experience: { 
-    type: DataTypes.INTEGER 
-  },
-  pendingConsultation: { 
-    type: DataTypes.ARRAY(DataTypes.UUID), 
-    defaultValue: [] ,
-    references: {
-      model: 'Consultations',
-      key: 'id'
-    }
-  },
-  inConsultation: { 
-    type: DataTypes.BOOLEAN, 
-    defaultValue: false 
-  },
-  isPendingDoctor: { 
-    type: DataTypes.BOOLEAN, 
-    defaultValue: true 
-  },
-  profilePic: { 
-    type: DataTypes.STRING 
-  }
-}, {
-  timestamps: true
-});
+  { timestamps: true }
+);
 
+// Export the model
+const Doctor = mongoose.model("Doctor", doctorSchema);
 module.exports = Doctor;

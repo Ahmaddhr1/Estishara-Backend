@@ -1,65 +1,63 @@
-// models/Patient.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const Patient = sequelize.define('Patient', {
-  id: { 
-    type: DataTypes.UUID, 
-    defaultValue: DataTypes.UUIDV4, 
-    primaryKey: true 
-  },
+const patientSchema = new Schema({
   name: { 
-    type: DataTypes.STRING, 
-    allowNull: false 
+    type: String, 
+    required: true 
   },
   email: { 
-    type: DataTypes.STRING, 
-    allowNull: false, 
+    type: String, 
+    required: true, 
     unique: true 
   },
   age: { 
-    type: DataTypes.INTEGER 
+    type: Number
   },
   phoneNumber: {
-    type: DataTypes.INTEGER, 
-    allowNull: false, 
+    type: Number, 
+    required: true, 
     unique: true 
   },
   nbOfEmergencyLeft: { 
-    type: DataTypes.INTEGER,
+    type: Number,
     defaultValue: 0 
   },
   weight: { 
-    type: DataTypes.DOUBLE 
+    type: Number 
   },
   height: { 
-    type: DataTypes.INTEGER 
+    type: Number 
   },
   smooking: { 
-    type: DataTypes.BOOLEAN,
-    defaultValue: false 
+    type: Boolean,
+    default: false 
   },
   alergic: { 
-    type: DataTypes.BOOLEAN,
-    defaultValue: false 
+    type: Boolean,
+    default: false 
   },
   alcohol: { 
-    type: DataTypes.BOOLEAN,
-    defaultValue: false 
+    type: Boolean,
+    default: false 
   },
   profilePic: { 
-    type: DataTypes.STRING 
+    type: String 
   },
-  requestedConsultations:{
-    type: DataTypes.ARRAY(DataTypes.UUID),
-    defaultValue: [],
-    references: {
-      model: 'Consultations',
-      key: 'id'
-    }
-  }
-}, {
-  timestamps: true
-});
+  
+  // Relationships
+  // requestedConsultations: {
+  //   type: [Schema.Types.ObjectId],
+  //   ref: 'Consultation',
+  //   default: []
+  // },
+  // reviewsDone:{
+  //   type: [Schema.Types.ObjectId],
+  //   ref: 'Review',
+  //   default: []
+  // }
+}, { timestamps: true });
 
+// Export the model
+const Patient = mongoose.model('Patient', patientSchema);
 module.exports = Patient;

@@ -1,44 +1,33 @@
-// models/Consultation.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const Consultation = sequelize.define('Consultation', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
-  patientId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'Patients', 
-      key: 'id'
-    }
-  },
-  doctorId: {
-    type: DataTypes.UUID, 
-    allowNull: false,
-    references: {
-      model: 'Doctors', 
-      key: 'id'
-    }
-  },
+const consultationSchema = new Schema({
   status: {
-    type: DataTypes.ENUM('requested', 'confirmed', 'canceled', 'complete'),
-    allowNull: false,
-    defaultValue: 'requested'
+    type: String,
+    enum: ["requested", "confirmed", "canceled", "complete"],
+    required: true,
+    default: "requested",
   },
   duration: {
-    type: DataTypes.INTEGER, 
-    allowNull: true
+    type: Number,
+    required: false,
   },
   isEmergency: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
-  }
-}, {
-  timestamps: true,
-});
+    type: Boolean,
+    default: false,
+  },
+  // patientId: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'Patient',
+  //   required: true
+  // },
+  // doctorId: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'Doctor',
+  //   required: true
+  // }
+}, { timestamps: true });
 
+
+const Consultation = mongoose.model('Consultation', consultationSchema);
 module.exports = Consultation;
