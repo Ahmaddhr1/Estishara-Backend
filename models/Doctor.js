@@ -7,7 +7,6 @@ const doctorSchema = new Schema(
       type: String,
       required: true,
     },
-    
     email: {
       type: String,
       required: true,
@@ -16,6 +15,7 @@ const doctorSchema = new Schema(
     password:{
       type: String,
       required: true,
+      minlength: 8,
     },
     phoneNumber: {
       type: Number,
