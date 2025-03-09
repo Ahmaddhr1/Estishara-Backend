@@ -16,6 +16,7 @@ const doctorSchema = new Schema(
       type: String,
       required: true,
       minlength: 8,
+      
     },
     phoneNumber: {
       type: Number,
