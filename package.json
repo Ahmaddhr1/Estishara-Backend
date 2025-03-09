@@ -4,13 +4,13 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "firebase": "^11.4.0",
+    "firebase-admin": "^13.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.14.2",
     "mongoose": "^8.12.1",
-    "pg": "^8.13.3",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.5",
-    "serverless-http": "^3.2.0",
+    "postmark": "^4.0.5",
+    "resend": "^4.1.2",
     "uuid": "^11.1.0"
   },
   "scripts": {

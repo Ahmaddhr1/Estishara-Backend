@@ -1,16 +1,20 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const User = require("../models/Patient.js");
-const doctorRoutes = require('../routes/DoctorRoutes.js');
+const doctorRoutes = require("../routes/DoctorRoutes.js");
+const authRoutes = require("../routes/authRoutes.js");
 const connectDB = require("../config/database.js");
 
-connectDB()
+try {
+  connectDB();
+}catch(e) {
+  console.error(e);
+}
 
 app.use(express.json());
 app.use(cors());
-app.use('/api/doctor', doctorRoutes);
-
+app.use("/api/doctor", doctorRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Helllooo estisharaaaaaaaaaaaaa");
@@ -23,4 +27,3 @@ app.get("/ahmad", (req, res) => {
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
-
