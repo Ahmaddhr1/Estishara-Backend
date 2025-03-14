@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 const doctorRoutes = require("../routes/DoctorRoutes.js");
 const authRoutes = require("../routes/authRoutes.js");
+const specialityRoutes = require("../routes/specialityRoutes.js");
 const connectDB = require("../config/database.js");
 
 try {
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(cors());
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/speciality", specialityRoutes);
 
 app.get("/", (req, res) => {
   res.send("Helllooo estisharaaaaaaaaaaaaa");
