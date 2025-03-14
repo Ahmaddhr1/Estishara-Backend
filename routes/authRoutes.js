@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const { Resend } = require("resend");
 const dotenv = require("dotenv");
 const Doctor = require("../models/Doctor");
+const Patient = require("../models/Patient");
 dotenv.config();
 
 const router = express.Router();
@@ -34,7 +35,7 @@ router.post("/request-otp", async (req, res) => {
     });
 
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: "send.estishara-6d1e0",
       to: email,
       subject: "Your OTP Code",
       html: `<p>Your OTP code is <strong>${otp}</strong>. It will expire in 5 minutes.</p>`,
@@ -69,6 +70,7 @@ router.post("/doctor/register", async (req, res) => {
       otpCode,
     } = req.body;
 
+    // Verify OTP
     try {
       const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
       if (decoded.otp !== otpCode) {
@@ -78,16 +80,26 @@ router.post("/doctor/register", async (req, res) => {
       return res.status(400).json({ error: "Expired or invalid OTP" });
     }
 
-    const checkDoctor = await Doctor.findOne({ email }).exec();
-    if (checkDoctor) {
-      return res.status(400).json({
-        error: "Email already exists",
-        message: "Doctor already exists!",
-      });
+    // Check if email or phone is already registered as a Doctor or Patient
+    const existingDoctor = await Doctor.findOne({ email }).exec();
+    const existingPatient = await Patient.findOne({ email }).exec();
+    const existingPhoneDoctor = await Doctor.findOne({ phoneNumber }).exec();
+    const existingPhonePatient = await Patient.findOne({ phoneNumber }).exec();
+
+    if (existingDoctor || existingPatient) {
+      return res.status(400).json({ error: "Email already registered!" });
     }
 
+    if (existingPhoneDoctor || existingPhonePatient) {
+      return res
+        .status(400)
+        .json({ error: "Phone number already registered!" });
+    }
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Save doctor
     const newDoctor = new Doctor({
       email,
       password: hashedPassword,
@@ -110,6 +122,7 @@ router.post("/doctor/register", async (req, res) => {
 
     const token = generateToken(newDoctor._id);
 
+    // Remove password before sending response
     const doctorObject = newDoctor.toObject();
     delete doctorObject.password;
 
@@ -121,7 +134,7 @@ router.post("/doctor/register", async (req, res) => {
   } catch (e) {
     res
       .status(400)
-      .json({ error: e.message, message: "Error creating Doctor!" });
+      .json({ error: e.message, message: "Error creating doctor!" });
   }
 });
 
@@ -156,6 +169,101 @@ router.post("/doctor/login", async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       doctor,
+      token,
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message, message: "Login failed!" });
+  }
+});
+
+router.post("/patient/register", async (req, res) => {
+  try {
+    const { name, email, phoneNumber, age, password, otpToken, otpCode } =
+      req.body;
+
+    try {
+      const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
+      if (decoded.otp !== otpCode) {
+        return res.status(400).json({ error: "Invalid OTP" });
+      }
+    } catch (err) {
+      return res.status(400).json({ error: "Expired or invalid OTP" });
+    }
+
+    const existingDoctor = await Doctor.findOne({ email }).exec();
+    const existingPatient = await Patient.findOne({ email }).exec();
+    const existingPhoneDoctor = await Doctor.findOne({ phoneNumber }).exec();
+    const existingPhonePatient = await Patient.findOne({ phoneNumber }).exec();
+
+    if (existingDoctor || existingPatient) {
+      return res.status(400).json({ error: "Email already registered!" });
+    }
+
+    if (existingPhoneDoctor || existingPhonePatient) {
+      return res
+        .status(400)
+        .json({ error: "Phone number already registered!" });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Save patient
+    const newPatient = new Patient({
+      name,
+      email,
+      phoneNumber,
+      age,
+      password: hashedPassword,
+    });
+
+    await newPatient.save();
+
+    const token = generateToken(newPatient._id);
+
+    // Remove password before sending response
+    const patientObject = newPatient.toObject();
+    delete patientObject.password;
+
+    res.status(201).json({
+      message: "Patient registered successfully",
+      patient: patientObject,
+      token,
+    });
+  } catch (e) {
+    res
+      .status(400)
+      .json({ error: e.message, message: "Error registering patient!" });
+  }
+});
+router.post("/patient/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ error: "Email and password are required!" });
+    }
+
+    const patient = await Patient.findOne({ email }).exec();
+    if (!patient) {
+      return res.status(400).json({ error: "Patient not found!" });
+    }
+
+    const isMatch = await bcrypt.compare(password, patient.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Incorrect password!" });
+    }
+
+    const token = generateToken(patient._id);
+
+    const patientObject = patient.toObject();
+    delete patientObject.password;
+
+    res.status(200).json({
+      message: "Login successful",
+      patient: patientObject,
       token,
     });
   } catch (e) {

@@ -27,7 +27,7 @@ const patientSchema = new Schema(
     },
     nbOfEmergencyLeft: {
       type: Number,
-      defaultValue: 0,
+      defaultValue: 3,
     },
     weight: {
       type: Number,

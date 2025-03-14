@@ -88,17 +88,17 @@ const doctorSchema = new Schema(
     },
 
     // Relationships
-    // specialityId: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'Speciality',
-    //   required: false
-    // },
+    specialityId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Speciality',
+      required: false
+    },
     // reviews: {
     //   type: [Schema.Types.ObjectId],
     //   ref: 'Review',
     //   default: []
     // },
-    // pendingConsultation: {
+    // pendingConsultations: {
     //   type: [Schema.Types.ObjectId],
     //   ref: 'Consultation',
     //   default: []
