@@ -6,10 +6,10 @@ const { Resend } = require("resend");
 const dotenv = require("dotenv");
 const Doctor = require("../models/Doctor");
 const Patient = require("../models/Patient");
+const  transporter  = require("../config/nodemailer");
 dotenv.config();
 
 const router = express.Router();
-const resend = new Resend(process.env.RESEND);
 
 // Generate JWT Token for Authentication
 const generateToken = (userId) => {
@@ -21,8 +21,9 @@ const generateToken = (userId) => {
   });
 };
 
-const generateOTP = () =>
-  Math.floor(100000 + Math.random() * 900000).toString();
+function generateOTP() {
+  return Math.floor(1000 + Math.random() * 9000);
+}
 
 router.post("/request-otp", async (req, res) => {
   try {
@@ -34,12 +35,17 @@ router.post("/request-otp", async (req, res) => {
       expiresIn: "5m",
     });
 
-    await resend.emails.send({
-      from: "send.estishara-6d1e0",
+    const mailOptions = {
+      from: {
+        address: 'ahmaddaher0981@gmail.com',
+        name: 'Estishara',  
+      },
       to: email,
-      subject: "Your OTP Code",
-      html: `<p>Your OTP code is <strong>${otp}</strong>. It will expire in 5 minutes.</p>`,
-    });
+      subject: 'Your OTP Code',
+      html: `<p>Your OTP code is :</p> </br><h1>${otp}</h1><p><strong>Note:</strong> It will expire in 5 minutes.</p></br><h3>Estishara Team,</h3>`,
+    };
+    
+    await transporter.sendMail(mailOptions)
     res.json({ message: "OTP sent successfully", otpToken });
   } catch (error) {
     res

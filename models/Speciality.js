@@ -15,6 +15,12 @@ const specialitySchema = new Schema(
       type: String,
       required: true,
     },
+    doctors: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Doctor",
+      },
+    ],
   },
   { timestamps: true }
 );

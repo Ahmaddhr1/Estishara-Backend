@@ -12,11 +12,10 @@ const doctorSchema = new Schema(
       required: true,
       unique: true,
     },
-    password:{
+    password: {
       type: String,
       required: true,
       minlength: 8,
-      
     },
     phoneNumber: {
       type: Number,
@@ -90,8 +89,8 @@ const doctorSchema = new Schema(
     // Relationships
     specialityId: {
       type: Schema.Types.ObjectId,
-      ref: 'Speciality',
-      required: false
+      ref: "Speciality",
+      required: false,
     },
     // reviews: {
     //   type: [Schema.Types.ObjectId],

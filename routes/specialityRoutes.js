@@ -64,6 +64,10 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
+    const isSpecialityExists = await Speciality.findById(req.params.id);
+    if (!isSpecialityExists) {
+      return res.status(404).json({ message: "Speciality not found" });
+    }
     const speciality = await Speciality.findByIdAndDelete(req.params.id);
     if (!speciality) {
       return res.status(404).json({ message: "Speciality not found" });
