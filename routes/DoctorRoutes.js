@@ -2,19 +2,17 @@ const express = require("express");
 const router = express.Router();
 const Doctor = require("../models/Doctor");
 const Speciality = require("../models/Speciality");
-const authenticateToken  = require("../utils/middleware");
-
+const authenticateToken = require("../utils/middleware");
 
 router.get("/", async (req, res) => {
   try {
     const doctors = await Doctor.find({
-      isPendingDoctor: true
+      isPendingDoctor: true,
     }).populate("specialityId");
 
     if (!doctors.length) {
       return res.status(404).json({ message: "Doctors not found" });
     }
-
     res.json(doctors);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -62,11 +60,11 @@ router.get("/search", async (req, res) => {
   }
 });
 
-
-
 router.get("/:id", async (req, res) => {
   try {
-    const doctor = await Doctor.findById(req.params.id).populate("specialityId");
+    const doctor = await Doctor.findById(req.params.id).populate(
+      "specialityId"
+    );
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
@@ -88,7 +86,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", authenticateToken , async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.params.id);
     const speciality = doctor.specialityId;
