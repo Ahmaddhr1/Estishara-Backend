@@ -5,6 +5,7 @@ const doctorRoutes = require("../routes/DoctorRoutes.js");
 const authRoutes = require("../routes/authRoutes.js");
 const specialityRoutes = require("../routes/specialityRoutes.js");
 const patientRoutes = require("../routes/patientRoutes.js");
+const adminRoutes = require("../routes/adminRoutes.js");
 const connectDB = require("../config/database.js");
 
 try {
@@ -21,6 +22,7 @@ app.use("/api/doctor", doctorRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/speciality", specialityRoutes);
 app.use("/api/patient", patientRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("Helllooo estisharaaaaaaaaaaaaa");

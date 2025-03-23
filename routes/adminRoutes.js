@@ -15,16 +15,21 @@ router.post("/", async (req, res) => {
 
     const admin = await Admin.findOne({ username }).exec();
     if (admin) {
-      const isCorrectPassword = bcrypt.compare(password, admin.password);
+      // Ensure bcrypt.compare is awaited
+      const isCorrectPassword = await bcrypt.compare(password, admin.password);
       if (isCorrectPassword) {
         const token = generateToken(admin._id);
         return res
           .status(200)
-          .json({ message: "Admin already exists,Logged In..", token, admin });
+          .json({ message: "Admin already exists, Logged In..", token, admin });
+      } else {
+        return res.status(401).json({ message: "Invalid password" });
       }
     }
+
+    // Create new admin if one doesn't exist
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newAdmin = Admin.create({ username, password: hashedPassword });
+    const newAdmin = new Admin({ username, password: hashedPassword });
     await newAdmin.save();
     const token = generateToken(newAdmin._id);
     res
@@ -35,7 +40,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete('/:id',async(req,res)=> {
+router.delete("/:id", async (req, res) => {
   try {
     const admin = await Admin.findByIdAndDelete(req.params.id);
     if (!admin) {
@@ -46,9 +51,11 @@ router.delete('/:id',async(req,res)=> {
     res.status(500).json({ message: err.message });
   }
 });
-router.put('/:id',async(req,res)=> {
+
+router.put("/:id", async (req, res) => {
   try {
-    const admin = await Admin.findByIdAndUpdate(req.params.id, req.body);
+    // Added `{ new: true }` to return the updated document
+    const admin = await Admin.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
@@ -56,6 +63,6 @@ router.put('/:id',async(req,res)=> {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-})
+});
 
 module.exports = router;
