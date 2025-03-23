@@ -14,6 +14,9 @@ router.post("/", async (req, res) => {
     }
 
     const admin = await Admin.findOne({ username }).exec();
+    if(!admin) {
+      return res.status(401).json({ message: "Admin not found" });
+    }
     if (admin) {
       // Ensure bcrypt.compare is awaited
       const isCorrectPassword = await bcrypt.compare(password, admin.password);
@@ -26,8 +29,6 @@ router.post("/", async (req, res) => {
         return res.status(401).json({ message: "Invalid password" });
       }
     }
-
-    // Create new admin if one doesn't exist
     const hashedPassword = await bcrypt.hash(password, 10);
     const newAdmin = new Admin({ username, password: hashedPassword });
     await newAdmin.save();
@@ -54,8 +55,8 @@ router.delete("/:id", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    // Added `{ new: true }` to return the updated document
-    const admin = await Admin.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+    const admin = await Admin.findByIdAndUpdate(req.params.id, req.body);
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
