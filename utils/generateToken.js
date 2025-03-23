@@ -6,9 +6,7 @@ const generateToken = (userId) => {
   const secretKey = process.env.JWT_SECRET || "defaultSecret";
   const uniqueAddition = uuidv4();
 
-  return jwt.sign({ id: userId + "-" + uniqueAddition }, secretKey, {
-    expiresIn: "7d", // Token expires in 7 days
-  });
+  return jwt.sign({ id: userId + "-" + uniqueAddition }, secretKey);
 };
 
 module.exports = generateToken;
