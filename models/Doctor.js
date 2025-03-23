@@ -14,12 +14,10 @@ const doctorSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
       minlength: 8,
     },
     phoneNumber: {
       type: Number,
-      required: true,
       unique: true,
     },
     age: {

@@ -6,19 +6,16 @@ const { Resend } = require("resend");
 const dotenv = require("dotenv");
 const Doctor = require("../models/Doctor");
 const Patient = require("../models/Patient");
-const  transporter  = require("../config/nodemailer");
+const transporter = require("../config/nodemailer");
+const admin = require("../config/firebaseConfig");
 dotenv.config();
 
 const router = express.Router();
 
-// Generate JWT Token for Authentication
 const generateToken = (userId) => {
   const secretKey = process.env.JWT_SECRET || "defaultSecret";
   const uniqueAddition = uuidv4();
-
-  return jwt.sign({ id: userId + "-" + uniqueAddition }, secretKey, {
-    expiresIn: "7d",
-  });
+  return jwt.sign({ id: userId + "-" + uniqueAddition }, secretKey);
 };
 
 function generateOTP() {
@@ -37,15 +34,15 @@ router.post("/request-otp", async (req, res) => {
 
     const mailOptions = {
       from: {
-        address: 'ahmaddaher0981@gmail.com',
-        name: 'Estishara',  
+        address: "ahmaddaher0981@gmail.com",
+        name: "Estishara",
       },
       to: email,
-      subject: 'Your OTP Code',
+      subject: "Your OTP Code",
       html: `<p>Your OTP code is :</p> </br><h1>${otp}</h1><p><strong>Note:</strong> It will expire in 5 minutes.</p></br><h3>Estishara Team,</h3>`,
     };
-    
-    await transporter.sendMail(mailOptions)
+
+    await transporter.sendMail(mailOptions);
     res.json({ message: "OTP sent successfully", otpToken });
   } catch (error) {
     res
@@ -276,5 +273,106 @@ router.post("/patient/login", async (req, res) => {
     res.status(500).json({ error: e.message, message: "Login failed!" });
   }
 });
+
+router.post("/patient-google", async (req, res) => {
+  const { idToken, phoneNumber, alergic, smooking, height, age, weight } =
+    req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ error: "ID token is required" });
+  }
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { email, name, picture } = decodedToken;
+
+    // Check if patient already exists
+    let patient = await Patient.findOne({ email });
+
+    if (!patient) {
+      patient = await Patient.create({
+        name: name,
+        email,
+        profilePic: picture,
+        phoneNumber,
+        alergic,
+        smooking,
+        height,
+        age,
+        weight,
+      });
+    }
+    const token = generateToken(patient._id);
+
+    res.status(200).json({
+      message: "Patient authenticated via Google",
+      token,
+      patient,
+    });
+  } catch (error) {
+    console.error("Google sign-in error:", error);
+    res.status(401).json({ error: "Invalid or expired ID token" });
+  }
+});
+
+router.post('/doctor-google', async (req, res) => {
+  const {
+    idToken,
+    phoneNumber,
+    profilePic,
+    age,
+    respondTime,
+    consultationFees,
+    workingAt,
+    education,
+    treated,
+    service,
+    experience,
+    specialityId,
+    documents,
+  } = req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ error: 'ID token is required' });
+  }
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { email, name} = decodedToken;
+
+    let doctor = await Doctor.findOne({ email });
+
+    if (!doctor) {
+      doctor = await Doctor.create({
+        name: name,
+        email,
+        phoneNumber,
+        profilePic,
+        age,
+        respondTime,
+        consultationFees,
+        workingAt,
+        education,
+        treated,
+        service,
+        experience,
+        specialityId,
+        documents,
+      });
+    }
+
+    const token = generateToken(doctor._id);
+
+    res.status(200).json({
+      message: 'Doctor authenticated via Google',
+      token,
+      doctor,
+    });
+  } catch (error) {
+    console.error('Doctor Google sign-in error:', error);
+    res.status(401).json({ error: 'Invalid or expired ID token' });
+  }
+});
+
 
 module.exports = router;

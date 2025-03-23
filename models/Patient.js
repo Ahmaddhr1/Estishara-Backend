@@ -14,7 +14,6 @@ const patientSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
       minlength: 8,
     },
     age: {
@@ -22,7 +21,6 @@ const patientSchema = new Schema(
     },
     phoneNumber: {
       type: Number,
-      required: true,
       unique: true,
     },
     nbOfEmergencyLeft: {

@@ -9,6 +9,7 @@ let transporter = nodemailer.createTransport({
     user: 'ahmaddaher0981@gmail.com',
     pass:  process.env.APP_PASS,
   },
-});
+},
+);
 
 module.exports = transporter;
