@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
     }
 
     const admin = await Admin.findOne({ username }).exec();
-    if(!admin) {
+    if (!admin) {
       return res.status(401).json({ message: "Admin not found" });
     }
     if (admin) {
@@ -55,12 +55,34 @@ router.delete("/:id", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-
     const admin = await Admin.findByIdAndUpdate(req.params.id, req.body);
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
     res.json(admin);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const admins = await Admin.find();
+    if (!admins) return res.status(404).json({ message: "No admins found" });
+    else {
+      res.status(200).json(admins);
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+router.get("/:id", async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.id);
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
+    else {
+      res.status(200).json(admin);
+    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
