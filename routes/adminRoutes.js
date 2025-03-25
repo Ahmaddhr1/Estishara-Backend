@@ -4,45 +4,55 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 
-router.post("/", async (req, res) => {
+router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  
+
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ message: "Username and password are required" });
+  }
+
   try {
-    
-    if (!username || !password) {
-      return res.status(400).json({ message: "Username and password are required" });
+    const admin = await Admin.findOne({ username }).exec();
+
+    if (!admin || !(await bcrypt.compare(password, admin.password))) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    
-    const admin = await Admin.findOne({ username }).exec();
-    
-    if (admin) {
-      const isCorrectPassword = await bcrypt.compare(password, admin.password);
-      if (!isCorrectPassword) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      const token = generateToken(admin._id);
-      return res.status(200).json({ 
-        message: "Logged in successfully", 
-        token, 
-        admin: { id: admin._id, username: admin.username } 
-      });
-    } else {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newAdmin = new Admin({ 
-        username, 
-        password: hashedPassword 
-      });
-      
-      await newAdmin.save();
-      const token = generateToken(newAdmin._id);
-      
-      return res.status(201).json({ 
-        message: "Admin created successfully", 
-        token, 
-        admin: { id: newAdmin._id, username: newAdmin.username } 
-      });
+    const token = generateToken(admin._id);
+    res.status(200).json({
+      message: "Logged in successfully",
+      token,
+      admin: { id: admin._id, username: admin.username },
+    });
+  } catch (err) {
+    console.error("Error in login route:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+router.post("/", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ message: "Username and password are required" });
+  }
+
+  try {
+    const existingAdmin = await Admin.findOne({ username }).exec();
+    if (existingAdmin) {
+      return res.status(400).json({ message: "Admin username already exists" });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newAdmin = new Admin({ username, password: hashedPassword });
+
+    await newAdmin.save();
+    res.status(201).json({ 
+      message: "Admin created successfully", 
+    });
+
   } catch (err) {
     console.error("Error in admin route:", err);
     res.status(500).json({ message: "Server error", error: err.message });
