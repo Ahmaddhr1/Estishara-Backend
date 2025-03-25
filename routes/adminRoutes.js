@@ -6,7 +6,6 @@ const generateToken = require("../utils/generateToken");
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-
   if (!username || !password) {
     return res
       .status(400)
@@ -50,7 +49,8 @@ router.post("/", async (req, res) => {
 
     await newAdmin.save();
     res.status(201).json({ 
-      message: "Admin created successfully", 
+      message: "Admin created successfully",
+      admin: { id: newAdmin._id, username: newAdmin.username },
     });
 
   } catch (err) {
