@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Speciality = require("../models/Speciality");
+const Doctor = require("../models/Doctor");
 
 router.get("/", async (req, res) => {
   try {
@@ -16,6 +17,24 @@ router.get("/", async (req, res) => {
       return res.status(404).json({ message: "No specialities found" });
     }
     res.json(specialities);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const doctors = await Doctor.find({ specialityId: id }).populate(
+      "specialityId",
+      "name"
+    );
+
+    if (!doctors) {
+      return res.status(404).json({ message: "No doctors found" });
+    }
+    res.status(200).json(doctors);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

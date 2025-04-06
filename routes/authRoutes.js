@@ -2,7 +2,6 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
-const { Resend } = require("resend");
 const dotenv = require("dotenv");
 const Doctor = require("../models/Doctor");
 const Patient = require("../models/Patient");
