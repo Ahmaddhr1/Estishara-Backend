@@ -48,18 +48,39 @@ const patientSchema = new Schema(
     profilePic: {
       type: String,
     },
-
-    // Relationships
-    // requestedConsultations: {
-    //   type: [Schema.Types.ObjectId],
-    //   ref: 'Consultation',
-    //   default: []
-    // },
-    // reviewsDone:{
-    //   type: [Schema.Types.ObjectId],
-    //   ref: 'Review',
-    //   default: []
-    // }
+    bloodType: {
+      type: String,
+      enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
+    },
+    alergicType: {
+      type: String,
+    },
+    chronicDisease: {
+      type: boolean,
+    },
+    gender: {
+      type: String,
+      enum: ["Male", "Female",],
+    },
+    medicationDetails:{
+      type: String,
+    },
+    chroniceDiseaseDetails:{
+      type: String,
+    },
+    takenMedication:{
+      type:String,
+    },
+    requestedConsultations: {
+      type: [Schema.Types.ObjectId],
+      ref: "Consultation",
+      default: [],
+    },
+    reviewsDone: {
+      type: [Schema.Types.ObjectId],
+      ref: "Review",
+      default: [],
+    },
   },
   { timestamps: true }
 );
