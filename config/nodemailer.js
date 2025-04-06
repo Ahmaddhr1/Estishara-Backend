@@ -17,7 +17,7 @@ const outlookTransporter = nodemailer.createTransport({
   secure: false,
   auth: {
     user: "ahmaddaher07@hotmail.com",
-    pass: "Ahmad789",
+    pass: "cmfypirdkpihzdxs",
   },
   tls: {
     ciphers: "SSLv3",

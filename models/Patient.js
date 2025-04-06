@@ -56,7 +56,7 @@ const patientSchema = new Schema(
       type: String,
     },
     chronicDisease: {
-      type: boolean,
+      type: Boolean,
     },
     gender: {
       type: String,
