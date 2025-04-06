@@ -63,7 +63,6 @@ router.post("/doctor/register", async (req, res) => {
       consultationFees,
       workingAt,
       education,
-      isEmergencyAvailable,
       treated,
       service,
       experience,

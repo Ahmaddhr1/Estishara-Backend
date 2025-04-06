@@ -7,7 +7,7 @@ const authenticateToken = require("../utils/middleware");
 router.get("/", async (req, res) => {
   try {
     const doctors = await Doctor.find({
-      isPendingDoctor: true,
+      isPendingDoctor: false,
     }).populate("specialityId");
 
     if (!doctors.length) {
@@ -111,5 +111,19 @@ router.delete("/:id", async (req, res) => {
 //    res.send("Doctors were deleted") ;
 
 // })
+
+router.post("/approve/:id", async (req, res) => {
+  try {
+    const doctor = await Doctor.findByIdAndUpdate(req.body.doctorId, {
+      isPendingDoctor: false,
+    });
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+    res.json({ message: "The doctor is now available On the platform!" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;

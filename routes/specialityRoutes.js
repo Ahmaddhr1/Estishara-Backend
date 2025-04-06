@@ -26,7 +26,7 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const doctors = await Doctor.find({ specialityId: id }).populate(
+    const doctors = await Doctor.find({ isPendingDoctor:false ,specialityId: id }).populate(
       "specialityId",
       "name"
     );
