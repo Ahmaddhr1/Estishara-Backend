@@ -5,7 +5,10 @@ const { v4: uuidv4 } = require("uuid");
 const dotenv = require("dotenv");
 const Doctor = require("../models/Doctor");
 const Patient = require("../models/Patient");
-const transporter = require("../config/nodemailer");
+const {
+  gmailTransporter,
+  outlookTransporter,
+} = require("../config/nodemailer");
 const admin = require("../config/firebaseConfig");
 dotenv.config();
 
@@ -31,9 +34,15 @@ router.post("/request-otp", async (req, res) => {
       expiresIn: "5m",
     });
 
+    const transporter = email.endsWith("@gmail.com")
+      ? gmailTransporter
+      : outlookTransporter;
+
     const mailOptions = {
       from: {
-        address: "ahmaddaher0981@gmail.com",
+        address: email.endsWith("@gmail.com")
+          ? "ahmaddaher0981@gmail.com"
+          : "ahmaddaher07@hotmail.com",
         name: "Estishara",
       },
       to: email,
@@ -313,7 +322,7 @@ router.post("/patient-google", async (req, res) => {
   }
 });
 
-router.post('/doctor-google', async (req, res) => {
+router.post("/doctor-google", async (req, res) => {
   const {
     idToken,
     phoneNumber,
@@ -331,12 +340,12 @@ router.post('/doctor-google', async (req, res) => {
   } = req.body;
 
   if (!idToken) {
-    return res.status(400).json({ error: 'ID token is required' });
+    return res.status(400).json({ error: "ID token is required" });
   }
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const { email, name} = decodedToken;
+    const { email, name } = decodedToken;
 
     let doctor = await Doctor.findOne({ email });
 
@@ -362,15 +371,14 @@ router.post('/doctor-google', async (req, res) => {
     const token = generateToken(doctor._id);
 
     res.status(200).json({
-      message: 'Doctor authenticated via Google',
+      message: "Doctor authenticated via Google",
       token,
       doctor,
     });
   } catch (error) {
-    console.error('Doctor Google sign-in error:', error);
-    res.status(401).json({ error: 'Invalid or expired ID token' });
+    console.error("Doctor Google sign-in error:", error);
+    res.status(401).json({ error: "Invalid or expired ID token" });
   }
 });
-
 
 module.exports = router;
