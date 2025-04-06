@@ -1,11 +1,11 @@
-const nodemailer = require('nodemailer');
-require('dotenv').config();
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 // Gmail transporter
 const gmailTransporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
-    user: 'ahmaddaher0981@gmail.com',
+    user: "ahmaddaher0981@gmail.com",
     pass: process.env.APP_PASS, // Use env variable for safety
   },
 });
@@ -17,7 +17,7 @@ const outlookTransporter = nodemailer.createTransport({
   secure: false,
   auth: {
     user: "ahmaddaher07@hotmail.com",
-    pass: process.env.OUTLOOK_PASS, // Avoid hardcoding passwords
+    pass: "Ahmad789",
   },
   tls: {
     ciphers: "SSLv3",
