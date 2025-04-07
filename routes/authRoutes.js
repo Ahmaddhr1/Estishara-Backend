@@ -5,10 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const dotenv = require("dotenv");
 const Doctor = require("../models/Doctor");
 const Patient = require("../models/Patient");
-const {
-  gmailTransporter,
-  outlookTransporter,
-} = require("../config/nodemailer");
+const transporter = require("../config/nodemailer");
 const admin = require("../config/firebaseConfig");
 dotenv.config();
 
@@ -34,15 +31,11 @@ router.post("/request-otp", async (req, res) => {
       expiresIn: "5m",
     });
 
-    const transporter = email.endsWith("@gmail.com")
-      ? gmailTransporter
-      : outlookTransporter;
+
 
     const mailOptions = {
       from: {
-        address: email.endsWith("@gmail.com")
-          ? "ahmaddaher0981@gmail.com"
-          : "ahmaddaher07@hotmail.com",
+        email: "ahmaddaher0981@gmail.com",
         name: "Estishara",
       },
       to: email,
