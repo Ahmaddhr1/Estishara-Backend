@@ -31,8 +31,8 @@ router.post("/request-otp", async (req, res) => {
     });
 
     const apikey = process.env.BREVO_MAIL;
-    const url = "https://api.brevo.com/v3/smtp/email";
-    
+    const url = process.env.BREVO_URL;
+
     // Prepare email data
     const emailData = {
       sender: {
@@ -61,9 +61,7 @@ router.post("/request-otp", async (req, res) => {
       });
 
       const data = await response.json();
-      if (response.ok) {
-        console.log("Email sent successfully:", data);
-      } else {
+      if (!response.ok) {
         console.error("Error sending email:", data);
         return res
           .status(500)
