@@ -5,7 +5,6 @@ const { v4: uuidv4 } = require("uuid");
 const dotenv = require("dotenv");
 const Doctor = require("../models/Doctor");
 const Patient = require("../models/Patient");
-const transporter = require("../config/nodemailer");
 const admin = require("../config/firebaseConfig");
 dotenv.config();
 
@@ -31,24 +30,59 @@ router.post("/request-otp", async (req, res) => {
       expiresIn: "5m",
     });
 
+    const apikey = process.env.BREVO_MAIL;
+    const url = "https://api.brevo.com/v3/smtp/email";
 
-
-    const mailOptions = {
-      from: {
-        email: "ahmaddaher0981@gmail.com",
+    // Prepare email data
+    const emailData = {
+      sender: {
         name: "Estishara",
+        email: "ahmaddaher0981@gmail.com",
       },
-      to: email,
+      to: [
+        {
+          email: email,
+        },
+      ],
       subject: "Your OTP Code",
-      html: `<p>Your OTP code is :</p> </br><h1>${otp}</h1><p><strong>Note:</strong> It will expire in 5 minutes.</p></br><h3>Estishara Team,</h3>`,
+      htmlContent: `<p>Your OTP code is :</p><br/><h1>${otp}</h1><p><strong>Note:</strong> It will expire in 5 minutes.</p><br/><h3>Estishara Team,</h3>`,
+      textContent: `Your OTP code is: ${otp}. Note: It will expire in 5 minutes.`,
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email using Brevo's API
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": apikey,
+        },
+        body: JSON.stringify(emailData),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        console.log("Email sent successfully:", data);
+      } else {
+        console.error("Error sending email:", data);
+        return res
+          .status(500)
+          .json({ error: "Failed to send OTP", details: data });
+      }
+    } catch (e) {
+      console.error("Failed to send email:", e.message);
+      return res
+        .status(500)
+        .json({ error: "Failed to send OTP", details: e.message });
+    }
+
+    // Respond with OTP token
     res.json({ message: "OTP sent successfully", otpToken });
   } catch (error) {
+    console.error("Error in request-otp route:", error); // Log the error for debugging
     res
       .status(500)
-      .json({ error: "Failed to send OTP", details: error.message });
+      .json({ error: "Internal server error", details: error.message });
   }
 });
 
