@@ -32,7 +32,7 @@ router.post("/request-otp", async (req, res) => {
 
     const apikey = process.env.BREVO_MAIL;
     const url = "https://api.brevo.com/v3/smtp/email";
-
+    
     // Prepare email data
     const emailData = {
       sender: {
