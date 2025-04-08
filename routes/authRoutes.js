@@ -274,14 +274,14 @@ router.post("/patient/register", async (req, res) => {
       otpCode,
     } = req.body;
 
-    try {
-      const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
-      if (decoded.otp !== otpCode) {
-        return res.status(400).json({ error: "Invalid OTP" });
-      }
-    } catch (err) {
-      return res.status(400).json({ error: "Expired or invalid OTP" });
-    }
+    // try {
+    //   const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
+    //   if (decoded.otp !== otpCode) {
+    //     return res.status(400).json({ error: "Invalid OTP" });
+    //   }
+    // } catch (err) {
+    //   return res.status(400).json({ error: "Expired or invalid OTP" });
+    // }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newPatient = new Patient({
@@ -329,7 +329,7 @@ router.post("/patient/login", async (req, res) => {
       return res.status(400).json({ error: "Patient not found!" });
     }
 
-    const isMatch = await bcrypt.compare(password, patient.password);
+    const isMatch =  bcrypt.compare(password, patient.password);
     if (!isMatch) {
       return res.status(400).json({ error: "Incorrect password!" });
     }
