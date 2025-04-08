@@ -216,14 +216,14 @@ router.post("/patient/register", async (req, res) => {
     const { name, email, phoneNumber, age, password, otpToken, otpCode } =
       req.body;
 
-    // try {
-    //   const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
-    //   if (decoded.otp !== otpCode) {
-    //     return res.status(400).json({ error: "Invalid OTP" });
-    //   }
-    // } catch (err) {
-    //   return res.status(400).json({ error: "Expired or invalid OTP" });
-    // }
+    try {
+      const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
+      if (decoded.otp !== otpCode) {
+        return res.status(400).json({ error: "Invalid OTP" });
+      }
+    } catch (err) {
+      return res.status(400).json({ error: "Expired or invalid OTP" });
+    }
 
     const existingDoctor = await Doctor.findOne({ email }).exec();
     const existingPatient = await Patient.findOne({ email }).exec();
