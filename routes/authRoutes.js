@@ -182,7 +182,7 @@ router.post("/doctor/register", async (req, res) => {
     // Find the speciality and add the doctor to the speciality's doctor list
     const speciality = await Speciality.findById(specialityId);
     if (!speciality) {
-      return res.status(404).json({ message: "Speciality Not Found" });
+      return res.status(404).json({ error: "Speciality Not Found" });
     }
 
     // Add doctor to speciality
@@ -217,7 +217,6 @@ router.post("/doctor/login", async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         error: "Missing fields",
-        message: "Email and password are required!",
       });
     }
 
@@ -225,7 +224,6 @@ router.post("/doctor/login", async (req, res) => {
     if (!doctor) {
       return res.status(400).json({
         error: "Invalid credentials",
-        message: "Doctor not found!",
       });
     }
 
@@ -233,7 +231,6 @@ router.post("/doctor/login", async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({
         error: "Invalid credentials",
-        message: "Incorrect password!",
       });
     }
 
@@ -374,7 +371,7 @@ router.post("/patient/login", async (req, res) => {
 
 // Google Authentication for Patient
 router.post("/patient-google", async (req, res) => {
-  const { idToken, phoneNumber, alergic, smooking, height, age, weight } =
+  const { idToken, phoneNumber, age,} =
     req.body;
 
   if (!idToken) {
@@ -394,11 +391,7 @@ router.post("/patient-google", async (req, res) => {
         email,
         profilePic: picture,
         phoneNumber,
-        alergic,
-        smooking,
-        height,
-        age,
-        weight,
+        age
       });
     }
     const { accessToken, refreshToken } = generateTokens(patient._id);
@@ -420,17 +413,9 @@ router.post("/doctor-google", async (req, res) => {
   const {
     idToken,
     phoneNumber,
-    profilePic,
     age,
-    respondTime,
-    consultationFees,
-    workingAt,
-    education,
-    treated,
-    service,
-    experience,
     specialityId,
-    documents,
+    documents
   } = req.body;
 
   if (!idToken) {
@@ -448,17 +433,9 @@ router.post("/doctor-google", async (req, res) => {
         name: name,
         email,
         phoneNumber,
-        profilePic,
         age,
-        respondTime,
-        consultationFees,
-        workingAt,
-        education,
-        treated,
-        service,
-        experience,
         specialityId,
-        documents,
+        documents
       });
     }
 
