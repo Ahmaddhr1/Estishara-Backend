@@ -25,51 +25,61 @@ const patientSchema = new Schema(
     },
     nbOfEmergencyLeft: {
       type: Number,
-      defaultValue: 3,
+      default: 3, // Default to 3 if not provided
     },
     weight: {
       type: Number,
+      default:-1
     },
     height: {
       type: Number,
+      default:-1
     },
     smooking: {
       type: Boolean,
-      default: false,
+      default: false, // Default to false if not provided
     },
     alergic: {
       type: Boolean,
-      default: false,
+      default: false, // Default to false if not provided
     },
     alcohol: {
       type: Boolean,
-      default: false,
+      default: false, // Default to false if not provided
     },
     profilePic: {
       type: String,
+      default: "", // Default to empty string if not provided
     },
     bloodType: {
       type: String,
       enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
+      default:"Select Blood Type"
     },
     alergicType: {
       type: String,
+      default: "", // Default to empty string if not provided
     },
     chronicDisease: {
       type: Boolean,
+      default: false, // Default to false if not provided
     },
     gender: {
       type: String,
-      enum: ["Male", "Female",],
+      enum: ["Male", "Female"],
+      default:"Select Gender"
     },
-    medicationDetails:{
+    medicationType: {
       type: String,
+      default: "", // Default to empty string if not provided
     },
-    chroniceDiseaseDetails:{
+    chroniceDiseaseDetails: {
       type: String,
+      default: "", // Default to empty string if not provided
     },
-    takenMedication:{
-      type:String,
+    takeMedication: {
+      type: Boolean,
+      default: false, // Default to empty string if not provided
     },
     requestedConsultations: {
       type: [Schema.Types.ObjectId],
