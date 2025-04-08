@@ -54,7 +54,7 @@ const patientSchema = new Schema(
     },
     bloodType: {
       type: String,
-      enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
+      enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-","Select Blood Type"],
       default:"Select Blood Type"
     },
     alergicType: {
@@ -67,7 +67,7 @@ const patientSchema = new Schema(
     },
     gender: {
       type: String,
-      enum: ["Male", "Female"],
+      enum: ["Male", "Female","Select Gender"],
       default:"Select Gender"
     },
     medicationType: {
