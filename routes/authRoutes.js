@@ -16,18 +16,17 @@ const generateTokens = (user) => {
   const secretKey = process.env.JWT_SECRET || "defaultSecret";
   const uniqueAddition = uuidv4();
 
-  // Set role based on the user type, automatically infer the role
-  let role = 'patient'; // default role
-  if (user.role === 'admin') {
-    role = 'admin';
+  let role = "patient";
+  if (user.role === "admin") {
+    role = "admin";
   } else if (user.specialityId) {
-    role = 'doctor';
+    role = "doctor";
   }
 
   const payload = {
     id: user._id,
     email: user.email,
-    role: role,  // inferred role
+    role: role, // inferred role
     uuid: uniqueAddition, // optional
   };
 
@@ -208,11 +207,18 @@ router.post("/doctor/login", async (req, res) => {
 // ✅ Refresh Token Endpoint
 router.post("/refresh-token", async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    // Extract refresh token from Authorization header (Bearer <refresh_token>)
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+      return res.status(400).json({ error: "Authorization header is required" });
+    }
+
+    const refreshToken = authHeader.split(' ')[1]; // Get the token part (remove "Bearer" part)
     if (!refreshToken) {
       return res.status(400).json({ error: "Refresh token is required" });
     }
 
+    // Verify the refresh token
     jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         return res
@@ -220,9 +226,14 @@ router.post("/refresh-token", async (req, res) => {
           .json({ error: "Invalid or expired refresh token" });
       }
 
-      const { accessToken, refreshToken: newRefreshToken } =
-        generateTokens(decoded);
-      res.status(200).json({ accessToken, refreshToken: newRefreshToken });
+      // Generate new access token and refresh token
+      const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded);
+
+      // Return the new tokens
+      res.status(200).json({
+        accessToken,
+        refreshToken: newRefreshToken,
+      });
     });
   } catch (e) {
     res
@@ -230,7 +241,6 @@ router.post("/refresh-token", async (req, res) => {
       .json({ error: e.message, message: "Error refreshing token" });
   }
 });
-
 // ✅ Patient Registration
 router.post("/patient/register", async (req, res) => {
   try {
@@ -388,14 +398,26 @@ router.post("/doctor-google", async (req, res) => {
 // ✅ Token Verification
 router.post("/verify-token", async (req, res) => {
   try {
-    const { token } = req.body;
-    if (!token) return res.status(400).json({ error: "Token is required" });
+    // Extract token from Authorization header (Bearer <token>)
+    const authHeader = req.headers["authorization"];
+    if (!authHeader) {
+      return res
+        .status(400)
+        .json({ error: "Authorization header is required" });
+    }
 
+    const token = authHeader.split(" ")[1]; // Get the token part (remove "Bearer" part)
+    if (!token) {
+      return res.status(400).json({ error: "Token is required" });
+    }
+
+    // Verify the token
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         return res.status(401).json({ error: "Invalid or expired token" });
       }
 
+      // Return the decoded user data if the token is valid
       res.status(200).json({ message: "Token is valid", user: decoded });
     });
   } catch (e) {
