@@ -11,24 +11,28 @@ dotenv.config();
 
 const router = express.Router();
 
-// Function to generate both access and refresh tokens
-const generateTokens = (userId) => {
+// ✅ Function to generate both access and refresh tokens
+const generateTokens = (user) => {
   const secretKey = process.env.JWT_SECRET || "defaultSecret";
   const uniqueAddition = uuidv4();
 
-  // Access token expires in 1 hour
-  const accessToken = jwt.sign(
-    { id: userId + "-" + uniqueAddition },
-    secretKey,
-    { expiresIn: "1h" }
-  );
+  // Set role based on the user type, automatically infer the role
+  let role = 'patient'; // default role
+  if (user.role === 'admin') {
+    role = 'admin';
+  } else if (user.specialityId) {
+    role = 'doctor';
+  }
 
-  // Refresh token expires in 30 days
-  const refreshToken = jwt.sign(
-    { id: userId + "-" + uniqueAddition },
-    secretKey,
-    { expiresIn: "30d" }
-  );
+  const payload = {
+    id: user._id,
+    email: user.email,
+    role: role,  // inferred role
+    uuid: uniqueAddition, // optional
+  };
+
+  const accessToken = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+  const refreshToken = jwt.sign(payload, secretKey, { expiresIn: "30d" });
 
   return { accessToken, refreshToken };
 };
@@ -38,7 +42,7 @@ function generateOTP() {
   return Math.floor(1000 + Math.random() * 9000);
 }
 
-// Route to request OTP
+// ✅ Route to request OTP
 router.post("/request-otp", async (req, res) => {
   try {
     const { email, phoneNumber } = req.body;
@@ -48,42 +52,20 @@ router.post("/request-otp", async (req, res) => {
         .json({ error: "Email or Phone number is required" });
     }
 
-    // Check if email already exists in database for Doctor
     const existingDoctorByEmail = await Doctor.findOne({ email }).exec();
-    // Check if email already exists in database for Patient
     const existingPatientByEmail = await Patient.findOne({ email }).exec();
-    // Check if phone number already exists in database for Doctor
     const existingDoctorByPhone = await Doctor.findOne({ phoneNumber }).exec();
-    // Check if phone number already exists in database for Patient
     const existingPatientByPhone = await Patient.findOne({
       phoneNumber,
     }).exec();
 
-    if (existingDoctorByEmail) {
-      return res
-        .status(400)
-        .json({ error: "Email already registered as Doctor!" });
+    if (existingDoctorByEmail || existingPatientByEmail) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+    if (existingDoctorByPhone || existingPatientByPhone) {
+      return res.status(400).json({ error: "Phone number already registered" });
     }
 
-    if (existingPatientByEmail) {
-      return res
-        .status(400)
-        .json({ error: "Email already registered as Patient!" });
-    }
-
-    if (existingDoctorByPhone) {
-      return res
-        .status(400)
-        .json({ error: "Phone number already registered as Doctor!" });
-    }
-
-    if (existingPatientByPhone) {
-      return res
-        .status(400)
-        .json({ error: "Phone number already registered as Patient!" });
-    }
-
-    // Generate OTP
     const otp = generateOTP();
     const otpToken = jwt.sign({ email, otp }, process.env.OTP_SECRET, {
       expiresIn: "5m",
@@ -93,50 +75,38 @@ router.post("/request-otp", async (req, res) => {
     const url = process.env.BREVO_URL;
 
     const emailData = {
-      sender: {
-        name: "Estishara",
-        email: "ahmaddaher0981@gmail.com",
-      },
+      sender: { name: "Estishara", email: "ahmaddaher0981@gmail.com" },
       to: [{ email }],
       subject: "Your OTP Code",
       htmlContent: `<p>Your OTP code is :</p><br/><h1>${otp}</h1><p><strong>Note:</strong> It will expire in 5 minutes.</p><br/><h3>Estishara Team,</h3>`,
       textContent: `Your OTP code is: ${otp}. Note: It will expire in 5 minutes.`,
     };
 
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": apikey,
-        },
-        body: JSON.stringify(emailData),
-      });
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": apikey,
+      },
+      body: JSON.stringify(emailData),
+    });
 
-      const data = await response.json();
-      if (!response.ok) {
-        console.error("Error sending email:", data);
-        return res
-          .status(500)
-          .json({ error: "Failed to send OTP", details: data });
-      }
-    } catch (e) {
-      console.error("Failed to send email:", e.message);
+    const data = await response.json();
+    if (!response.ok) {
       return res
         .status(500)
-        .json({ error: "Failed to send OTP", details: e.message });
+        .json({ error: "Failed to send OTP", details: data });
     }
 
     res.json({ message: "OTP sent successfully", otpToken });
   } catch (error) {
-    console.error("Error in request-otp route:", error);
     res
       .status(500)
       .json({ error: "Internal server error", details: error.message });
   }
 });
 
-// Doctor Registration with token generation (access and refresh tokens)
+// ✅ Doctor Registration
 router.post("/doctor/register", async (req, res) => {
   try {
     const {
@@ -151,7 +121,6 @@ router.post("/doctor/register", async (req, res) => {
       otpCode,
     } = req.body;
 
-    // Verify OTP
     try {
       const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
       if (decoded.otp !== otpCode) {
@@ -160,9 +129,9 @@ router.post("/doctor/register", async (req, res) => {
     } catch (err) {
       return res.status(400).json({ error: "Expired or invalid OTP" });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save doctor
     const newDoctor = new Doctor({
       email,
       password: hashedPassword,
@@ -173,29 +142,22 @@ router.post("/doctor/register", async (req, res) => {
       documents,
     });
 
-    // Save the doctor to the database
     const savedDoctor = await newDoctor.save();
-
-    // Populate speciality after saving the doctor
     await savedDoctor.populate("specialityId");
 
-    // Find the speciality and add the doctor to the speciality's doctor list
     const speciality = await Speciality.findById(specialityId);
     if (!speciality) {
       return res.status(404).json({ error: "Speciality Not Found" });
     }
 
-    // Add doctor to speciality
     speciality.doctors.push(savedDoctor._id);
     await speciality.save();
 
-    // Generate tokens for the doctor
-    const { accessToken, refreshToken } = generateTokens(savedDoctor._id);
+    const { accessToken, refreshToken } = generateTokens(savedDoctor);
 
     const doctorObject = savedDoctor.toObject();
     delete doctorObject.password;
 
-    // Send response with doctor data and tokens
     res.status(201).json({
       message: "Doctor created successfully",
       doctor: doctorObject,
@@ -209,36 +171,32 @@ router.post("/doctor/register", async (req, res) => {
   }
 });
 
-// Doctor login with token generation (access and refresh tokens)
+// ✅ Doctor Login
 router.post("/doctor/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
-      return res.status(400).json({
-        error: "Missing fields",
-      });
+      return res.status(400).json({ error: "Missing fields" });
     }
 
     const doctor = await Doctor.findOne({ email }).exec();
     if (!doctor) {
-      return res.status(400).json({
-        error: "Invalid credentials",
-      });
+      return res.status(400).json({ error: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, doctor.password);
     if (!isMatch) {
-      return res.status(400).json({
-        error: "Invalid credentials",
-      });
+      return res.status(400).json({ error: "Invalid credentials" });
     }
 
-    const { accessToken, refreshToken } = generateTokens(doctor._id);
+    const { accessToken, refreshToken } = generateTokens(doctor);
+
+    const doctorObject = doctor.toObject();
+    delete doctorObject.password;
 
     res.status(200).json({
       message: "Login successful",
-      doctor,
+      doctor: doctorObject,
       accessToken,
       refreshToken,
     });
@@ -247,11 +205,10 @@ router.post("/doctor/login", async (req, res) => {
   }
 });
 
-// Refresh Token Endpoint
+// ✅ Refresh Token Endpoint
 router.post("/refresh-token", async (req, res) => {
   try {
     const { refreshToken } = req.body;
-
     if (!refreshToken) {
       return res.status(400).json({ error: "Refresh token is required" });
     }
@@ -263,14 +220,9 @@ router.post("/refresh-token", async (req, res) => {
           .json({ error: "Invalid or expired refresh token" });
       }
 
-      const { accessToken, refreshToken: newRefreshToken } = generateTokens(
-        decoded.id
-      );
-
-      res.status(200).json({
-        accessToken,
-        refreshToken: newRefreshToken,
-      });
+      const { accessToken, refreshToken: newRefreshToken } =
+        generateTokens(decoded);
+      res.status(200).json({ accessToken, refreshToken: newRefreshToken });
     });
   } catch (e) {
     res
@@ -279,7 +231,7 @@ router.post("/refresh-token", async (req, res) => {
   }
 });
 
-// Patient registration with token generation (access and refresh tokens)
+// ✅ Patient Registration
 router.post("/patient/register", async (req, res) => {
   try {
     const {
@@ -314,7 +266,7 @@ router.post("/patient/register", async (req, res) => {
 
     await newPatient.save();
 
-    const { accessToken, refreshToken } = generateTokens(newPatient._id);
+    const { accessToken, refreshToken } = generateTokens(newPatient);
 
     const patientObject = newPatient.toObject();
     delete patientObject.password;
@@ -332,11 +284,10 @@ router.post("/patient/register", async (req, res) => {
   }
 });
 
-// Patient login with token generation (access and refresh tokens)
+// ✅ Patient Login
 router.post("/patient/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res
         .status(400)
@@ -348,12 +299,12 @@ router.post("/patient/login", async (req, res) => {
       return res.status(400).json({ error: "Patient not found!" });
     }
 
-    const isMatch = bcrypt.compare(password, patient.password);
+    const isMatch = await bcrypt.compare(password, patient.password);
     if (!isMatch) {
       return res.status(400).json({ error: "Incorrect password!" });
     }
 
-    const { accessToken, refreshToken } = generateTokens(patient._id);
+    const { accessToken, refreshToken } = generateTokens(patient);
 
     const patientObject = patient.toObject();
     delete patientObject.password;
@@ -369,33 +320,27 @@ router.post("/patient/login", async (req, res) => {
   }
 });
 
-// Google Authentication for Patient
+// ✅ Google Sign-In for Patient
 router.post("/patient-google", async (req, res) => {
-  const { idToken, phoneNumber, age,} =
-    req.body;
-
-  if (!idToken) {
-    return res.status(400).json({ error: "ID token is required" });
-  }
+  const { idToken, phoneNumber, age } = req.body;
+  if (!idToken) return res.status(400).json({ error: "ID token is required" });
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const { email, name, picture } = decodedToken;
 
-    // Check if patient already exists
     let patient = await Patient.findOne({ email });
-
     if (!patient) {
       patient = await Patient.create({
-        name: name,
+        name,
         email,
         profilePic: picture,
         phoneNumber,
-        age
+        age,
       });
     }
-    const { accessToken, refreshToken } = generateTokens(patient._id);
 
+    const { accessToken, refreshToken } = generateTokens(patient);
     res.status(200).json({
       message: "Patient authenticated via Google",
       token: accessToken,
@@ -403,44 +348,32 @@ router.post("/patient-google", async (req, res) => {
       patient,
     });
   } catch (error) {
-    console.error("Google sign-in error:", error);
     res.status(401).json({ error: "Invalid or expired ID token" });
   }
 });
 
-// Google Authentication for Doctor
+// ✅ Google Sign-In for Doctor
 router.post("/doctor-google", async (req, res) => {
-  const {
-    idToken,
-    phoneNumber,
-    age,
-    specialityId,
-    documents
-  } = req.body;
-
-  if (!idToken) {
-    return res.status(400).json({ error: "ID token is required" });
-  }
+  const { idToken, phoneNumber, age, specialityId, documents } = req.body;
+  if (!idToken) return res.status(400).json({ error: "ID token is required" });
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const { email, name } = decodedToken;
 
     let doctor = await Doctor.findOne({ email });
-
     if (!doctor) {
       doctor = await Doctor.create({
-        name: name,
+        name,
         email,
         phoneNumber,
         age,
         specialityId,
-        documents
+        documents,
       });
     }
 
-    const { accessToken, refreshToken } = generateTokens(doctor._id);
-
+    const { accessToken, refreshToken } = generateTokens(doctor);
     res.status(200).json({
       message: "Doctor authenticated via Google",
       token: accessToken,
@@ -448,8 +381,27 @@ router.post("/doctor-google", async (req, res) => {
       doctor,
     });
   } catch (error) {
-    console.error("Doctor Google sign-in error:", error);
     res.status(401).json({ error: "Invalid or expired ID token" });
+  }
+});
+
+// ✅ Token Verification
+router.post("/verify-token", async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: "Token is required" });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ error: "Invalid or expired token" });
+      }
+
+      res.status(200).json({ message: "Token is valid", user: decoded });
+    });
+  } catch (e) {
+    res
+      .status(500)
+      .json({ error: e.message, message: "Error verifying token" });
   }
 });
 

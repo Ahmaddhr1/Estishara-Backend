@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Speciality = require("../models/Speciality");
 const Doctor = require("../models/Doctor");
+const authenticateToken = require("../utils/middleware");
 
+// GET all specialities (Accessible by anyone)
 router.get("/", async (req, res) => {
   try {
     const { title } = req.query;
@@ -22,11 +24,12 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET doctors by speciality ID (Accessible by anyone)
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const doctors = await Doctor.find({ isPendingDoctor:false ,specialityId: id }).populate(
+    const doctors = await Doctor.find({ isPendingDoctor: false, specialityId: id }).populate(
       "specialityId",
       "name"
     );
@@ -40,18 +43,23 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
-  try {
-    const { title, logo, description } = req.body;
-    if (!title || !logo || !description) {
-      return res.status(400).json({ message: "All fields are required!" });
-    }
+// POST create a speciality (Only accessible by admins)
+router.post("/", authenticateToken, async (req, res) => {
+  const { title, logo, description } = req.body;
 
+  // Check if the user is an admin
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Forbidden: Only admins can create specialities" });
+  }
+
+  if (!title || !logo || !description) {
+    return res.status(400).json({ message: "All fields are required!" });
+  }
+
+  try {
     const existingSpeciality = await Speciality.findOne({ title });
     if (existingSpeciality) {
-      return res
-        .status(400)
-        .json({ message: "Speciality with this title already exists" });
+      return res.status(400).json({ message: "Speciality with this title already exists" });
     }
     const speciality = new Speciality(req.body);
     await speciality.save();
@@ -63,10 +71,16 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
-  try {
-    const { title, logo, description } = req.body;
+// PUT update a speciality (Only accessible by admins)
+router.put("/:id", authenticateToken, async (req, res) => {
+  const { title, logo, description } = req.body;
 
+  // Check if the user is an admin
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Forbidden: Only admins can update specialities" });
+  }
+
+  try {
     const isSpecialityExists = await Speciality.findById(req.params.id);
     if (!isSpecialityExists) {
       return res.status(404).json({ message: "Speciality not found" });
@@ -81,7 +95,13 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+// DELETE a speciality (Only accessible by admins)
+router.delete("/:id", authenticateToken, async (req, res) => {
+  // Check if the user is an admin
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Forbidden: Only admins can delete specialities" });
+  }
+
   try {
     const isSpecialityExists = await Speciality.findById(req.params.id);
     if (!isSpecialityExists) {

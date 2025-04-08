@@ -1,15 +1,25 @@
 const express = require("express");
-const Admin = require("../models/Admin");
-const router = express.Router();
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const generateToken = require("../utils/generateToken");
+const Admin = require("../models/Admin"); // Assuming Admin model exists
+const authenticateToken = require("../utils/middleware");
+const dotenv = require("dotenv");
+dotenv.config();
 
+const router = express.Router();
+
+// Function to generate both access and refresh tokens
+const generateToken = (userId, role = 'admin') => {
+  const secretKey = process.env.JWT_SECRET || "defaultSecret";
+  return jwt.sign({ id: userId, role: role }, secretKey, { expiresIn: '1h' });
+};
+
+// Admin Login Route
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
+
   if (!username || !password) {
-    return res
-      .status(400)
-      .json({ message: "Username and password are required" });
+    return res.status(400).json({ message: "Username and password are required" });
   }
 
   try {
@@ -19,7 +29,8 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = generateToken(admin._id);
+    // Generate token with role 'admin'
+    const token = generateToken(admin._id, 'admin');
     res.status(200).json({
       message: "Logged in successfully",
       token,
@@ -31,6 +42,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Admin Registration Route (Creating new Admin)
 router.post("/", async (req, res) => {
   const { username, password } = req.body;
 
@@ -48,59 +60,100 @@ router.post("/", async (req, res) => {
     const newAdmin = new Admin({ username, password: hashedPassword });
 
     await newAdmin.save();
-    res.status(201).json({ 
+
+    // Generate token with role 'admin'
+    const token = generateToken(newAdmin._id, 'admin');
+
+    res.status(201).json({
       message: "Admin created successfully",
       admin: { id: newAdmin._id, username: newAdmin.username },
+      token, // include the token in the response
     });
-
   } catch (err) {
     console.error("Error in admin route:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
-router.delete("/:id", async (req, res) => {
+// Admin Delete Route (Admins can delete each other)
+router.delete("/:id", authenticateToken, async (req, res) => {
   try {
+    const { role } = req.user;
+
+    // Only admins can delete other admins
+    if (role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized: Only admins can delete other admins" });
+    }
+
     const admin = await Admin.findByIdAndDelete(req.params.id);
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
+
     res.json({ message: "Admin deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-router.put("/:id", async (req, res) => {
+// Admin Update Route (Admin can update their details)
+router.put("/:id", authenticateToken, async (req, res) => {
   try {
-    const admin = await Admin.findByIdAndUpdate(req.params.id, req.body);
+    const { role } = req.user;
+
+    // Only admins can update their profile or others' profiles
+    if (role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized: Only admins can update admin profiles" });
+    }
+
+    const admin = await Admin.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
+
     res.json(admin);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-router.get("/", async (req, res) => {
+// Get All Admins (only for admins)
+router.get("/", authenticateToken, async (req, res) => {
   try {
-    const admins = await Admin.find();
-    if (!admins) return res.status(404).json({ message: "No admins found" });
-    else {
-      res.status(200).json(admins);
+    const { role } = req.user;
+
+    // Only admin can access the list of admins
+    if (role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized: Only admins can access this route" });
     }
+
+    const admins = await Admin.find();
+    if (!admins.length) {
+      return res.status(404).json({ message: "No admins found" });
+    }
+
+    res.status(200).json(admins);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-router.get("/:id", async (req, res) => {
+
+// Get Single Admin
+router.get("/:id", authenticateToken, async (req, res) => {
   try {
-    const admin = await Admin.findById(req.params.id);
-    if (!admin) return res.status(404).json({ message: "Admin not found" });
-    else {
-      res.status(200).json(admin);
+    const { role } = req.user;
+
+    // Admins can view any admin's profile
+    if (role !== 'admin') {
+      return res.status(403).json({ message: "Unauthorized: Only admins can access this route" });
     }
+
+    const admin = await Admin.findById(req.params.id);
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    res.status(200).json(admin);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

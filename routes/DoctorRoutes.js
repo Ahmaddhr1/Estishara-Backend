@@ -4,7 +4,7 @@ const Doctor = require("../models/Doctor");
 const Speciality = require("../models/Speciality");
 const authenticateToken = require("../utils/middleware");
 
-router.get("/", async (req, res) => {
+router.get("/",authenticateToken, async (req, res) => {
   try {
     const doctors = await Doctor.find({
       isPendingDoctor: false,
@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/search", async (req, res) => {
+router.get("/search",authenticateToken, async (req, res) => {
   try {
     const { name, respondTime, specialityId, consultationFees } = req.query;
 
@@ -74,9 +74,21 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", authenticateToken, async (req, res) => {
   try {
-    const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body);
+    const requestingUserRole = req.user.role;
+    const requestingUserId = req.user.id;
+
+    // Check if the user is the doctor themselves or an admin
+    if (requestingUserRole !== "admin" && requestingUserId !== req.params.id) {
+      return res.status(403).json({
+        message: "Forbidden: You are not authorized to update this profile",
+      });
+    }
+
+    const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
@@ -86,19 +98,32 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+// DELETE doctor (Only admins or the signed-in doctor can delete)
+router.delete("/:id", authenticateToken, async (req, res) => {
   try {
+    const requestingUserRole = req.user.role;
+    const requestingUserId = req.user.id;
+
+    // Check if the user is the doctor themselves or an admin
+    if (requestingUserRole !== "admin" && requestingUserId !== req.params.id) {
+      return res.status(403).json({
+        message: "Forbidden: You are not authorized to delete this profile",
+      });
+    }
+
     const doctor = await Doctor.findById(req.params.id);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
     const speciality = doctor.specialityId;
     if (speciality) {
       await Speciality.findByIdAndUpdate(speciality, {
         $pull: { doctors: doctor._id },
       });
     }
+
     await Doctor.findByIdAndDelete(req.params.id);
-    if (!doctor) {
-      return res.status(404).json({ message: "Doctor not found" });
-    }
     res.json({ message: "Doctor deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
