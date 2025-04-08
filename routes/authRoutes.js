@@ -213,7 +213,7 @@ router.post("/doctor/login", async (req, res) => {
 
 router.post("/patient/register", async (req, res) => {
   try {
-    const { name, email, phoneNumber, age, password, otpToken, otpCode } =
+    const { name,lastName, email, phoneNumber, age, password, otpToken, otpCode } =
       req.body;
 
     try {
@@ -246,6 +246,7 @@ router.post("/patient/register", async (req, res) => {
     // Save patient
     const newPatient = new Patient({
       name,
+      lastName,
       email,
       phoneNumber,
       age,
