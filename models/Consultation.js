@@ -12,20 +12,16 @@ const consultationSchema = new Schema({
     type: Number,
     required: false,
   },
-  isEmergency: {
-    type: Boolean,
-    default: false,
+  patientId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Patient',
+    required: true
   },
-  // patientId: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'Patient',
-  //   required: true
-  // },
-  // doctorId: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'Doctor',
-  //   required: true
-  // }
+  doctorId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Doctor',
+    required: true
+  },
 }, { timestamps: true });
 
 
