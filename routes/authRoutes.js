@@ -41,9 +41,49 @@ function generateOTP() {
 // Route to request OTP
 router.post("/request-otp", async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: "Email is required" });
+    const { email, phoneNumber } = req.body;
+    if (!email && !phoneNumber) {
+      return res
+        .status(400)
+        .json({ error: "Email or Phone number is required" });
+    }
 
+    // Check if email already exists in database for Doctor
+    const existingDoctorByEmail = await Doctor.findOne({ email }).exec();
+    // Check if email already exists in database for Patient
+    const existingPatientByEmail = await Patient.findOne({ email }).exec();
+    // Check if phone number already exists in database for Doctor
+    const existingDoctorByPhone = await Doctor.findOne({ phoneNumber }).exec();
+    // Check if phone number already exists in database for Patient
+    const existingPatientByPhone = await Patient.findOne({
+      phoneNumber,
+    }).exec();
+
+    if (existingDoctorByEmail) {
+      return res
+        .status(400)
+        .json({ error: "Email already registered as Doctor!" });
+    }
+
+    if (existingPatientByEmail) {
+      return res
+        .status(400)
+        .json({ error: "Email already registered as Patient!" });
+    }
+
+    if (existingDoctorByPhone) {
+      return res
+        .status(400)
+        .json({ error: "Phone number already registered as Doctor!" });
+    }
+
+    if (existingPatientByPhone) {
+      return res
+        .status(400)
+        .json({ error: "Phone number already registered as Patient!" });
+    }
+
+    // Generate OTP
     const otp = generateOTP();
     const otpToken = jwt.sign({ email, otp }, process.env.OTP_SECRET, {
       expiresIn: "5m",
@@ -52,7 +92,6 @@ router.post("/request-otp", async (req, res) => {
     const apikey = process.env.BREVO_MAIL;
     const url = process.env.BREVO_URL;
 
-    // Prepare email data
     const emailData = {
       sender: {
         name: "Estishara",
@@ -121,23 +160,6 @@ router.post("/doctor/register", async (req, res) => {
     } catch (err) {
       return res.status(400).json({ error: "Expired or invalid OTP" });
     }
-
-    // Check if email or phone is already registered
-    const existingDoctor = await Doctor.findOne({ email }).exec();
-    const existingPatient = await Patient.findOne({ email }).exec();
-    const existingPhoneDoctor = await Doctor.findOne({ phoneNumber }).exec();
-    const existingPhonePatient = await Patient.findOne({ phoneNumber }).exec();
-
-    if (existingDoctor || existingPatient) {
-      return res.status(400).json({ error: "Email already registered!" });
-    }
-
-    if (existingPhoneDoctor || existingPhonePatient) {
-      return res
-        .status(400)
-        .json({ error: "Phone number already registered!" });
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Save doctor
@@ -274,14 +296,14 @@ router.post("/patient/register", async (req, res) => {
       otpCode,
     } = req.body;
 
-    // try {
-    //   const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
-    //   if (decoded.otp !== otpCode) {
-    //     return res.status(400).json({ error: "Invalid OTP" });
-    //   }
-    // } catch (err) {
-    //   return res.status(400).json({ error: "Expired or invalid OTP" });
-    // }
+    try {
+      const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
+      if (decoded.otp !== otpCode) {
+        return res.status(400).json({ error: "Invalid OTP" });
+      }
+    } catch (err) {
+      return res.status(400).json({ error: "Expired or invalid OTP" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newPatient = new Patient({
@@ -329,7 +351,7 @@ router.post("/patient/login", async (req, res) => {
       return res.status(400).json({ error: "Patient not found!" });
     }
 
-    const isMatch =  bcrypt.compare(password, patient.password);
+    const isMatch = bcrypt.compare(password, patient.password);
     if (!isMatch) {
       return res.status(400).json({ error: "Incorrect password!" });
     }
