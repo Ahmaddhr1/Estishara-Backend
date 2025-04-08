@@ -30,8 +30,8 @@ const generateTokens = (user) => {
     uuid: uniqueAddition, // optional
   };
 
-  const accessToken = jwt.sign(payload, secretKey, { expiresIn: "1h" });
-  const refreshToken = jwt.sign(payload, secretKey, { expiresIn: "30d" });
+  const accessToken = jwt.sign(payload, secretKey, { expiresIn: "5m" });
+  const refreshToken = jwt.sign(payload, secretKey, { expiresIn: "10m" });
 
   return { accessToken, refreshToken };
 };
