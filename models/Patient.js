@@ -18,6 +18,7 @@ const patientSchema = new Schema(
     },
     age: {
       type: Number,
+      default:-1
     },
     phoneNumber: {
       type: Number,
