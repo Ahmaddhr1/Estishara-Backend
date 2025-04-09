@@ -4,7 +4,7 @@ const Doctor = require("../models/Doctor");
 const Speciality = require("../models/Speciality");
 const authenticateToken = require("../utils/middleware");
 
-router.get("/",authenticateToken, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const doctors = await Doctor.find({
       isPendingDoctor: false,
@@ -19,7 +19,7 @@ router.get("/",authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/search",authenticateToken, async (req, res) => {
+router.get("/search", async (req, res) => {
   try {
     const { name, respondTime, specialityId, consultationFees } = req.query;
 
@@ -137,7 +137,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 
 // })
 
-router.post("/approve/:id", async (req, res) => {
+router.put("/approve/:id", async (req, res) => {
   try {
     const doctor = await Doctor.findByIdAndUpdate(req.body.doctorId, {
       isPendingDoctor: false,

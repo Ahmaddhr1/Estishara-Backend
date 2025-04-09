@@ -30,8 +30,8 @@ const generateTokens = (user) => {
     uuid: uniqueAddition, // optional
   };
 
-  const accessToken = jwt.sign(payload, secretKey, { expiresIn: "1m" });
-  const refreshToken = jwt.sign(payload, secretKey, { expiresIn: "2m" });
+  const accessToken = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+  const refreshToken = jwt.sign(payload, secretKey, { expiresIn: "30d" });
 
   return { accessToken, refreshToken };
 };
@@ -130,6 +130,7 @@ router.post("/doctor/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    email = email.toLowerCase();
 
     const newDoctor = new Doctor({
       email,
@@ -156,12 +157,14 @@ router.post("/doctor/register", async (req, res) => {
 
     const doctorObject = savedDoctor.toObject();
     delete doctorObject.password;
+     const role="doctor"
 
     res.status(201).json({
       message: "Doctor created successfully",
       doctor: doctorObject,
       accessToken,
       refreshToken,
+      role
     });
   } catch (e) {
     res
@@ -177,7 +180,7 @@ router.post("/doctor/login", async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ error: "Missing fields" });
     }
-
+    email = email.toLowerCase();
     const doctor = await Doctor.findOne({ email }).exec();
     if (!doctor) {
       return res.status(400).json({ error: "Invalid credentials" });
@@ -193,11 +196,13 @@ router.post("/doctor/login", async (req, res) => {
     const doctorObject = doctor.toObject();
     delete doctorObject.password;
 
+     const role="doctor"
     res.status(200).json({
       message: "Login successful",
       doctor: doctorObject,
       accessToken,
       refreshToken,
+      role
     });
   } catch (e) {
     res.status(500).json({ error: e.message, message: "Login failed!" });
@@ -265,6 +270,7 @@ router.post("/patient/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    email = email.toLowerCase();
     const newPatient = new Patient({
       name,
       lastName,
@@ -281,11 +287,14 @@ router.post("/patient/register", async (req, res) => {
     const patientObject = newPatient.toObject();
     delete patientObject.password;
 
+    const role="patient"
+
     res.status(201).json({
       message: "Patient registered successfully",
       patient: patientObject,
       accessToken,
       refreshToken,
+      role
     });
   } catch (e) {
     res
@@ -303,7 +312,7 @@ router.post("/patient/login", async (req, res) => {
         .status(400)
         .json({ error: "Email and password are required!" });
     }
-
+    email = email.toLowerCase();
     const patient = await Patient.findOne({ email }).exec();
     if (!patient) {
       return res.status(400).json({ error: "Patient not found!" });
@@ -318,12 +327,13 @@ router.post("/patient/login", async (req, res) => {
 
     const patientObject = patient.toObject();
     delete patientObject.password;
-
+    const role="patient"
     res.status(200).json({
       message: "Login successful",
       patient: patientObject,
       accessToken,
       refreshToken,
+      role
     });
   } catch (e) {
     res.status(500).json({ error: e.message, message: "Login failed!" });
@@ -351,11 +361,13 @@ router.post("/patient-google", async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(patient);
+    const role="patient"
     res.status(200).json({
       message: "Patient authenticated via Google",
       token: accessToken,
       refreshToken,
       patient,
+      role
     });
   } catch (error) {
     res.status(401).json({ error: "Invalid or expired ID token" });
@@ -384,11 +396,13 @@ router.post("/doctor-google", async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(doctor);
+    const role="doctor"
     res.status(200).json({
       message: "Doctor authenticated via Google",
       token: accessToken,
       refreshToken,
       doctor,
+      role
     });
   } catch (error) {
     res.status(401).json({ error: "Invalid or expired ID token" });
