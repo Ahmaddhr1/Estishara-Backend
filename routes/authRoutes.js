@@ -125,6 +125,9 @@ router.post("/doctor/register", async (req, res) => {
       if (decoded.otp !== otpCode) {
         return res.status(400).json({ error: "Invalid OTP" });
       }
+      if (decoded.email !== email) {  // Ensure the email matches the OTP
+        return res.status(400).json({ error: "Email does not match OTP request" });
+      }
     } catch (err) {
       return res.status(400).json({ error: "Expired or invalid OTP" });
     }
@@ -264,6 +267,9 @@ router.post("/patient/register", async (req, res) => {
       const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
       if (decoded.otp !== otpCode) {
         return res.status(400).json({ error: "Invalid OTP" });
+      }
+      if (decoded.email !== email) { 
+        return res.status(400).json({ error: "Email does not match OTP request" });
       }
     } catch (err) {
       return res.status(400).json({ error: "Expired or invalid OTP" });
