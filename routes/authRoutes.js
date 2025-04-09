@@ -133,10 +133,10 @@ router.post("/doctor/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    email = email.toLowerCase();
+    let email1 = email.toLowerCase();
 
     const newDoctor = new Doctor({
-      email,
+      email:email1,
       password: hashedPassword,
       phoneNumber,
       name,
@@ -183,8 +183,8 @@ router.post("/doctor/login", async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ error: "Missing fields" });
     }
-    email = email.toLowerCase();
-    const doctor = await Doctor.findOne({ email }).exec();
+    let email1 = email.toLowerCase();
+    const doctor = await Doctor.findOne({ email1 }).exec();
     if (!doctor) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
@@ -276,11 +276,11 @@ router.post("/patient/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    email = email.toLowerCase();
+    let email1 = email.toLowerCase();
     const newPatient = new Patient({
       name,
       lastName,
-      email,
+      email:email1,
       phoneNumber,
       age,
       password: hashedPassword,
@@ -318,8 +318,8 @@ router.post("/patient/login", async (req, res) => {
         .status(400)
         .json({ error: "Email and password are required!" });
     }
-    email = email.toLowerCase();
-    const patient = await Patient.findOne({ email }).exec();
+    let email1 = email.toLowerCase();
+    const patient = await Patient.findOne({ email1 }).exec();
     if (!patient) {
       return res.status(400).json({ error: "Patient not found!" });
     }
