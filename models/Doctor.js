@@ -91,7 +91,7 @@ const doctorSchema = new Schema(
     },
     isPendingDoctor: {
       type: Boolean,
-      default: true, // Default to true when doctor is pending
+      default: true, 
     },
     profilePic: {
       type: String,
