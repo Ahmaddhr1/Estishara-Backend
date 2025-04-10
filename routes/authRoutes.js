@@ -113,6 +113,7 @@ router.post("/doctor/register", async (req, res) => {
       password,
       phoneNumber,
       name,
+      lastName,
       age,
       documents,
       specialityId,
@@ -142,6 +143,7 @@ router.post("/doctor/register", async (req, res) => {
       phoneNumber,
       name,
       age,
+      lastName,
       specialityId,
       documents,
     });

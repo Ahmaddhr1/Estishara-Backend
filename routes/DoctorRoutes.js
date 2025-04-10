@@ -18,6 +18,21 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+router.get("/pending", async (req, res) => {
+  try {
+    const doctors = await Doctor.find({
+      isPendingDoctor: true,
+    }).populate("specialityId");
+
+    if (!doctors.length) {
+      return res.status(404).json({ message: "Doctors not found" });
+    }
+    res.json(doctors);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 router.get("/search", async (req, res) => {
   try {
