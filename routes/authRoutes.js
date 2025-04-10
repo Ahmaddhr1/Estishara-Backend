@@ -122,7 +122,7 @@ router.post("/doctor/register", async (req, res) => {
     let email1 = email.toLowerCase();
 
     try {
-      const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
+      const decoded = await jwt.verify(otpToken, process.env.OTP_SECRET);
       if (decoded.otp !== otpCode) {
         return res.status(400).json({ error: "Invalid OTP" });
       }
