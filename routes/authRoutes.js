@@ -127,7 +127,7 @@ router.post("/doctor/register", async (req, res) => {
       if (decoded.otp !== otpCode) {
         return res.status(400).json({ error: "Invalid OTP" });
       }
-      if (decoded.email !== email1) {  // Ensure the email matches the OTP
+      if (decoded.email !== email1) {
         return res.status(400).json({ error: "Email does not match OTP request" });
       }
     } catch (err) {

@@ -161,7 +161,7 @@ router.put("/approve/:id", authenticateToken, async (req, res) => {
         message: "Forbidden: You are not authorized to delete this profile",
       });
     }
-    const doctor = await Doctor.findByIdAndUpdate(req.body.doctorId, {
+    const doctor = await Doctor.findByIdAndUpdate(req.params.id, {
       isPendingDoctor: false,
     });
     if (!doctor) {
