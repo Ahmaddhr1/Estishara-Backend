@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
   try {
     const doctors = await Doctor.find({
       isPendingDoctor: false,
-    }).populate("specialityId");
+    }).populate("specialityId title");
 
     if (!doctors.length) {
       return res.status(404).json({ message: "Doctors not found" });
@@ -32,7 +32,6 @@ router.get("/pending", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 router.get("/search", async (req, res) => {
   try {
@@ -152,8 +151,16 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 
 // })
 
-router.put("/approve/:id", async (req, res) => {
+router.put("/approve/:id", authenticateToken, async (req, res) => {
   try {
+    const requestingUserRole = req.user.role;
+    const requestingUserId = req.user.id;
+
+    if (requestingUserRole !== "admin" && requestingUserId !== req.params.id) {
+      return res.status(403).json({
+        message: "Forbidden: You are not authorized to delete this profile",
+      });
+    }
     const doctor = await Doctor.findByIdAndUpdate(req.body.doctorId, {
       isPendingDoctor: false,
     });

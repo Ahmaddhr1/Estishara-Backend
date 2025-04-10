@@ -105,7 +105,7 @@ router.post("/request-otp", async (req, res) => {
   }
 });
 
-// ✅ Doctor Registration
+
 router.post("/doctor/register", async (req, res) => {
   try {
     const {
