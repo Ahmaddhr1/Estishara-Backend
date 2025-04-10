@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
   try {
     const doctors = await Doctor.find({
       isPendingDoctor: false,
-    }).populate("specialityId title");
+    }).populate("specialityId");
 
     if (!doctors.length) {
       return res.status(404).json({ message: "Doctors not found" });

@@ -187,7 +187,7 @@ router.post("/doctor/login", async (req, res) => {
       return res.status(400).json({ error: "Missing fields" });
     }
     let email1 = email.toLowerCase();
-    const doctor = await Doctor.findOne({ email1 }).exec();
+    const doctor = await Doctor.findOne({ email:email1 }).exec();
     if (!doctor) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
@@ -316,33 +316,54 @@ router.post("/patient/register", async (req, res) => {
 router.post("/patient/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Validate email and password
     if (!email || !password) {
       return res
         .status(400)
         .json({ error: "Email and password are required!" });
     }
-    let email1 = email.toLowerCase();
-    const patient = await Patient.findOne({ email1 }).exec();
-    if (!patient) {
-      return res.status(400).json({ error: "Patient not found!" });
+
+    // Validate email format (optional but recommended)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: "Invalid email format!" });
     }
 
+    // Normalize and trim email
+    let email1 = email.toLowerCase().trim();
+
+    // Log the email to see if it's correctly formatted
+    console.log(`Querying for email: ${email1}`);
+
+    // Check if the patient exists
+    const patient = await Patient.findOne({ email: email1 }).exec();
+    
+    if (!patient) {
+      return res.status(400).json({ error: "Patient not found!" }); // More generic error message
+    }
+
+    // Compare the provided password with the stored hash
     const isMatch = await bcrypt.compare(password, patient.password);
     if (!isMatch) {
-      return res.status(400).json({ error: "Incorrect password!" });
+      return res.status(400).json({ error: "Invalid credentials!" }); // More generic error message
     }
 
+    // Generate access token and refresh token
     const { accessToken, refreshToken } = generateTokens(patient);
 
+    // Prepare patient object without password
     const patientObject = patient.toObject();
     delete patientObject.password;
-    const role="patient"
+
+    // Respond with tokens and user data
+    const role = "patient"; // Fixed role name
     res.status(200).json({
       message: "Login successful",
       patient: patientObject,
       accessToken,
       refreshToken,
-      role
+      role,
     });
   } catch (e) {
     res.status(500).json({ error: e.message, message: "Login failed!" });
