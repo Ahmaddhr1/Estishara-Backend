@@ -92,12 +92,6 @@ router.post("/request-otp", async (req, res) => {
     });
 
     const data = await response.json();
-    if (!response.ok) {
-      return res
-        .status(500)
-        .json({ error: "Failed to send OTP", details: data });
-    }
-
     res.json({ message: "OTP sent successfully", otpToken });
   } catch (error) {
     res
@@ -184,7 +178,9 @@ router.post("/refresh-token", async (req, res) => {
   try {
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
-      return res.status(400).json({ error: "Authorization header is required" });
+      return res
+        .status(400)
+        .json({ error: "Authorization header is required" });
     }
 
     const refreshToken = authHeader.split(" ")[1];
@@ -195,16 +191,21 @@ router.post("/refresh-token", async (req, res) => {
     // Verify the refresh token
     jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {
-        return res.status(401).json({ error: "Invalid or expired refresh token" });
+        return res
+          .status(401)
+          .json({ error: "Invalid or expired refresh token" });
       }
 
       const { email, role } = decoded;
 
       // Generate new tokens
-      const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded);
+      const { accessToken, refreshToken: newRefreshToken } =
+        generateTokens(decoded);
 
       if (role === "doctor") {
-        const doctor = await Doctor.findOne({ email }).populate("specialityId").lean();
+        const doctor = await Doctor.findOne({ email })
+          .populate("specialityId")
+          .lean();
         if (!doctor) return res.status(404).json({ error: "Doctor not found" });
 
         delete doctor.password;
@@ -215,10 +216,10 @@ router.post("/refresh-token", async (req, res) => {
           doctor,
           role,
         });
-
       } else if (role === "patient") {
         const patient = await Patient.findOne({ email }).lean();
-        if (!patient) return res.status(404).json({ error: "Patient not found" });
+        if (!patient)
+          return res.status(404).json({ error: "Patient not found" });
 
         delete patient.password;
 
@@ -228,13 +229,14 @@ router.post("/refresh-token", async (req, res) => {
           patient,
           role,
         });
-
       } else {
         return res.status(400).json({ error: "Unknown user role" });
       }
     });
   } catch (e) {
-    res.status(500).json({ error: e.message || "Unexpected error during refresh" });
+    res
+      .status(500)
+      .json({ error: e.message || "Unexpected error during refresh" });
   }
 });
 
@@ -422,12 +424,13 @@ router.post("/doctor-google", async (req, res) => {
   }
 });
 
-
 router.post("/verify-token", async (req, res) => {
   try {
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
-      return res.status(400).json({ error: "Authorization header is required" });
+      return res
+        .status(400)
+        .json({ error: "Authorization header is required" });
     }
 
     const token = authHeader.split(" ")[1];
@@ -436,29 +439,33 @@ router.post("/verify-token", async (req, res) => {
     }
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-      if (err) return res.status(401).json({ error: "Invalid or expired token" });
+      if (err)
+        return res.status(401).json({ error: "Invalid or expired token" });
 
       const { email, role } = decoded;
 
       if (role === "doctor") {
-        const doctor = await Doctor.findOne({ email }).populate("specialityId").lean();
+        const doctor = await Doctor.findOne({ email })
+          .populate("specialityId")
+          .lean();
         if (!doctor) return res.status(404).json({ error: "Doctor not found" });
         delete doctor.password;
         return res.status(200).json({
           message: "Token is valid",
           doctor,
-          role: "doctor"
+          role: "doctor",
         });
       }
 
       if (role === "patient") {
         const patient = await Patient.findOne({ email }).lean();
-        if (!patient) return res.status(404).json({ error: "Patient not found" });
+        if (!patient)
+          return res.status(404).json({ error: "Patient not found" });
         delete patient.password;
         return res.status(200).json({
           message: "Token is valid",
           patient,
-          role: "patient"
+          role: "patient",
         });
       }
 
@@ -469,12 +476,29 @@ router.post("/verify-token", async (req, res) => {
   }
 });
 
-router.post("/forget-password",authenticateToken, async (req,res)=> {
+router.post("/forget-password", authenticateToken, async (req, res) => {
   try {
-    
-  } catch (error) {
-    
-  }
-})
+    const { email } = req.body;
+    const apikey = process.env.BREVO_MAIL;
+    const url = process.env.BREVO_URL;
+
+    const emailData = {
+      sender: { name: "Estishara", email: "ahmaddaher0981@gmail.com" },
+      to: [{ email }],
+      subject: "Reset Your Password",
+      htmlContent: `<p>Press this link</p><br/><a href="https"><strong>Note:</strong> It will expire in 5 minutes.</a><br/><h3>Estishara Team,</h3>`,
+      textContent: `Your OTP code is: ${otp}. Note: It will expire in 5 minutes.`,
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": apikey,
+      },
+      body: JSON.stringify(emailData),
+    });
+  } catch (error) {}
+});
 
 module.exports = router;

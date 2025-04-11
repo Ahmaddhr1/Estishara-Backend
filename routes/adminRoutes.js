@@ -8,10 +8,10 @@ dotenv.config();
 
 const router = express.Router();
 
-// Function to generate both access and refresh tokens
+
 const generateToken = (userId, role = 'admin') => {
   const secretKey = process.env.JWT_SECRET || "defaultSecret";
-  return jwt.sign({ id: userId, role: role }, secretKey, { expiresIn: '1h' });
+  return jwt.sign({ id: userId, role: role }, secretKey, { expiresIn: '10d' });
 };
 
 // Admin Login Route
@@ -61,13 +61,13 @@ router.post("/", async (req, res) => {
 
     await newAdmin.save();
 
-    // Generate token with role 'admin'
+
     const token = generateToken(newAdmin._id, 'admin');
 
     res.status(201).json({
       message: "Admin created successfully",
       admin: { id: newAdmin._id, username: newAdmin.username },
-      token, // include the token in the response
+      token,
     });
   } catch (err) {
     console.error("Error in admin route:", err);
@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Admin Delete Route (Admins can delete each other)
+
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const { role } = req.user;
