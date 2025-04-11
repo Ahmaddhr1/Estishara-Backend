@@ -10,11 +10,9 @@ const connectDB = require("../config/database.js");
 
 try {
   connectDB();
-}catch(e) {
+} catch (e) {
   console.error(e);
 }
-
-
 
 app.use(express.json());
 app.use(cors());
@@ -34,8 +32,8 @@ app.get("/ahmad", (req, res) => {
 
 app.get("*", (req, res) => {
   res.status(404).json({ message: "Page not found" });
-})
+});
 
-app.listen(3001, () => {
-  console.log("Server is running on port 3001");
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
 });
