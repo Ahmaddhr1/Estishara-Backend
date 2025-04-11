@@ -137,12 +137,16 @@ router.put("/:id", authenticateToken, async (req, res) => {
     const requestingUserRole = req.user.role;
     const requestingUserId = req.user.id;
 
+    console.log(requestingUserId)
+
     // Check if the user is the doctor themselves or an admin
     if (requestingUserRole !== "admin" && requestingUserId !== req.params.id) {
       return res.status(403).json({
         message: "Forbidden: You are not authorized to update this profile",
       });
     }
+
+    
 
     const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
