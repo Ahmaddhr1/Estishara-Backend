@@ -3,7 +3,7 @@ const router = express.Router();
 const Banner = require("../models/Banner");
 const authenticateToken = require("../utils/middleware");
 
-//  GET all banners (admin only)
+
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const banners = await Banner.find({}).sort({ createdAt: -1 });

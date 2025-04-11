@@ -181,41 +181,59 @@ router.post("/doctor/register", async (req, res) => {
 
 router.post("/refresh-token", async (req, res) => {
   try {
-    // Extract refresh token from Authorization header (Bearer <refresh_token>)
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
-      return res
-        .status(400)
-        .json({ error: "Authorization header is required" });
+      return res.status(400).json({ error: "Authorization header is required" });
     }
 
-    const refreshToken = authHeader.split(" ")[1]; // Get the token part (remove "Bearer" part)
+    const refreshToken = authHeader.split(" ")[1];
     if (!refreshToken) {
       return res.status(400).json({ error: "Refresh token is required" });
     }
 
     // Verify the refresh token
-    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+    jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {
-        return res
-          .status(401)
-          .json({ error: "Invalid or expired refresh token" });
+        return res.status(401).json({ error: "Invalid or expired refresh token" });
       }
 
-      // Generate new access token and refresh token
-      const { accessToken, refreshToken: newRefreshToken } =
-        generateTokens(decoded);
+      const { email, role } = decoded;
 
-      // Return the new tokens
-      res.status(200).json({
-        accessToken,
-        refreshToken: newRefreshToken,
-      });
+      // Generate new tokens
+      const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded);
+
+      if (role === "doctor") {
+        const doctor = await Doctor.findOne({ email }).populate("specialityId").lean();
+        if (!doctor) return res.status(404).json({ error: "Doctor not found" });
+
+        delete doctor.password;
+
+        return res.status(200).json({
+          accessToken,
+          refreshToken: newRefreshToken,
+          doctor,
+          role,
+        });
+
+      } else if (role === "patient") {
+        const patient = await Patient.findOne({ email }).lean();
+        if (!patient) return res.status(404).json({ error: "Patient not found" });
+
+        delete patient.password;
+
+        return res.status(200).json({
+          accessToken,
+          refreshToken: newRefreshToken,
+          patient,
+          role,
+        });
+
+      } else {
+        return res.status(400).json({ error: "Unknown user role" });
+      }
     });
   } catch (e) {
-    res
-      .status(500)
-      .json({ error: e.message, message: "Error refreshing token" });
+    res.status(500).json({ error: e.message || "Unexpected error during refresh" });
   }
 });
 
