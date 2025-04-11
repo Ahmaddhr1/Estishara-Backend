@@ -8,6 +8,7 @@ const Patient = require("../models/Patient");
 const admin = require("../config/firebaseConfig");
 const Speciality = require("../models/Speciality");
 const authenticateToken = require("../utils/middleware");
+const Doctor = require("../models/Doctor");
 dotenv.config();
 
 const router = express.Router();
@@ -478,27 +479,30 @@ router.post("/verify-token", async (req, res) => {
 
 router.post("/forget-password", authenticateToken, async (req, res) => {
   try {
-    const { email } = req.body;
-    const apikey = process.env.BREVO_MAIL;
-    const url = process.env.BREVO_URL;
+    let { email, password } = req.body;
+    email = email.toLowerCase();
 
-    const emailData = {
-      sender: { name: "Estishara", email: "ahmaddaher0981@gmail.com" },
-      to: [{ email }],
-      subject: "Reset Your Password",
-      htmlContent: `<p>Press this link</p><br/><a href="https"><strong>Note:</strong> It will expire in 5 minutes.</a><br/><h3>Estishara Team,</h3>`,
-      textContent: `Your OTP code is: ${otp}. Note: It will expire in 5 minutes.`,
-    };
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": apikey,
-      },
-      body: JSON.stringify(emailData),
-    });
-  } catch (error) {}
+    const isPatient = await Patient.findOne({ email });
+    if (isPatient) {
+      isPatient.password = hashedPassword;
+      await isPatient.save();
+      return res.status(200).json({ message: "Patient password updated successfully" });
+    }
+
+    const doctor = await Doctor.findOne({ email });
+    if (doctor) {
+      doctor.password = hashedPassword;
+      await doctor.save();
+      return res.status(200).json({ message: "Doctor password updated successfully" });
+    }
+
+    return res.status(404).json({ message: "User not found" });
+
+  } catch (error) {
+    console.error("Forget password error:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
-
 module.exports = router;
