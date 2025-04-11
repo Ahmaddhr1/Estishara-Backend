@@ -50,7 +50,7 @@ router.post("/request-otp", async (req, res) => {
         .status(400)
         .json({ error: "Email or Phone number is required" });
     }
-    email=email.toLowerCase();
+    email = email.toLowerCase();
     const existingDoctorByEmail = await Doctor.findOne({ email }).exec();
     const existingPatientByEmail = await Patient.findOne({ email }).exec();
     const existingDoctorByPhone = await Doctor.findOne({ phoneNumber }).exec();
@@ -105,7 +105,6 @@ router.post("/request-otp", async (req, res) => {
   }
 });
 
-
 router.post("/doctor/register", async (req, res) => {
   try {
     const {
@@ -128,17 +127,18 @@ router.post("/doctor/register", async (req, res) => {
         return res.status(400).json({ error: "Invalid OTP" });
       }
       if (decoded.email !== email1) {
-        return res.status(400).json({ error: "Email does not match OTP request" });
+        return res
+          .status(400)
+          .json({ error: "Email does not match OTP request" });
       }
     } catch (err) {
       return res.status(400).json({ error: "Expired or invalid OTP" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
 
     const newDoctor = new Doctor({
-      email:email1,
+      email: email1,
       password: hashedPassword,
       phoneNumber,
       name,
@@ -163,14 +163,14 @@ router.post("/doctor/register", async (req, res) => {
 
     const doctorObject = savedDoctor.toObject();
     delete doctorObject.password;
-     const role="doctor"
+    const role = "doctor";
 
     res.status(201).json({
       message: "Doctor created successfully",
       doctor: doctorObject,
       accessToken,
       refreshToken,
-      role
+      role,
     });
   } catch (e) {
     res
@@ -179,18 +179,17 @@ router.post("/doctor/register", async (req, res) => {
   }
 });
 
-
-
-// ✅ Refresh Token Endpoint
 router.post("/refresh-token", async (req, res) => {
   try {
     // Extract refresh token from Authorization header (Bearer <refresh_token>)
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers["authorization"];
     if (!authHeader) {
-      return res.status(400).json({ error: "Authorization header is required" });
+      return res
+        .status(400)
+        .json({ error: "Authorization header is required" });
     }
 
-    const refreshToken = authHeader.split(' ')[1]; // Get the token part (remove "Bearer" part)
+    const refreshToken = authHeader.split(" ")[1]; // Get the token part (remove "Bearer" part)
     if (!refreshToken) {
       return res.status(400).json({ error: "Refresh token is required" });
     }
@@ -204,7 +203,8 @@ router.post("/refresh-token", async (req, res) => {
       }
 
       // Generate new access token and refresh token
-      const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded);
+      const { accessToken, refreshToken: newRefreshToken } =
+        generateTokens(decoded);
 
       // Return the new tokens
       res.status(200).json({
@@ -218,7 +218,7 @@ router.post("/refresh-token", async (req, res) => {
       .json({ error: e.message, message: "Error refreshing token" });
   }
 });
-// ✅ Patient Registration
+
 router.post("/patient/register", async (req, res) => {
   try {
     const {
@@ -237,19 +237,21 @@ router.post("/patient/register", async (req, res) => {
       if (decoded.otp !== otpCode) {
         return res.status(400).json({ error: "Invalid OTP" });
       }
-      if (decoded.email !== email1) { 
-        return res.status(400).json({ error: "Email does not match OTP request" });
+      if (decoded.email !== email1) {
+        return res
+          .status(400)
+          .json({ error: "Email does not match OTP request" });
       }
     } catch (err) {
       return res.status(400).json({ error: "Expired or invalid OTP" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const newPatient = new Patient({
       name,
       lastName,
-      email:email1,
+      email: email1,
       phoneNumber,
       age,
       password: hashedPassword,
@@ -262,14 +264,14 @@ router.post("/patient/register", async (req, res) => {
     const patientObject = newPatient.toObject();
     delete patientObject.password;
 
-    const role="patient"
+    const role = "patient";
 
     res.status(201).json({
       message: "Patient registered successfully",
       patient: patientObject,
       accessToken,
       refreshToken,
-      role
+      role,
     });
   } catch (e) {
     res
@@ -284,7 +286,9 @@ router.post("/login", async (req, res) => {
 
     // Basic validation
     if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required!" });
+      return res
+        .status(400)
+        .json({ error: "Email and password are required!" });
     }
 
     const emailNormalized = email.toLowerCase().trim();
@@ -331,7 +335,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Google Sign-In for Patient
 router.post("/patient-google", async (req, res) => {
   const { idToken, phoneNumber, age } = req.body;
   if (!idToken) return res.status(400).json({ error: "ID token is required" });
@@ -352,13 +355,13 @@ router.post("/patient-google", async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(patient);
-    const role="patient"
+    const role = "patient";
     res.status(200).json({
       message: "Patient authenticated via Google",
       token: accessToken,
       refreshToken,
       patient,
-      role
+      role,
     });
   } catch (error) {
     res.status(401).json({ error: "Invalid or expired ID token" });
@@ -387,13 +390,13 @@ router.post("/doctor-google", async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(doctor);
-    const role="doctor"
+    const role = "doctor";
     res.status(200).json({
       message: "Doctor authenticated via Google",
       token: accessToken,
       refreshToken,
       doctor,
-      role
+      role,
     });
   } catch (error) {
     res.status(401).json({ error: "Invalid or expired ID token" });

@@ -22,6 +22,7 @@ app.use("/api/speciality", specialityRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/admin", adminRoutes);
 
+
 app.get("/", (req, res) => {
   res.send("Helllooo estisharaaaaaaaaaaaaa");
 });
@@ -34,6 +35,6 @@ app.get("*", (req, res) => {
   res.status(404).json({ message: "Page not found" });
 });
 
-app.listen(3000, () => {
+app.listen(3001, () => {
   console.log("Server is running on port 3000");
 });

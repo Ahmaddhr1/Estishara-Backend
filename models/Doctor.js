@@ -50,11 +50,7 @@ const doctorSchema = new Schema(
       max: 100,
       default: 20, // Default to 50 if not provided
     },
-    rating: {
-      type: String,
-      enum: ["0", "1", "2", "3", "4", "5"],
-      default: "0", // Default to "0" if no rating is provided
-    },
+    recommendedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Patient' }],
     workingAt: {
       type: String,
       required: true,
@@ -104,13 +100,6 @@ const doctorSchema = new Schema(
       ref: "Speciality",
       required: false,
       default: null, // Default to null if not provided
-    },
-
-    // Optional arrays for reviews and consultations
-    reviews: {
-      type: [Schema.Types.ObjectId],
-      ref: "Review",
-      default: [], // Default to empty array if no reviews are provided
     },
     pendingConsultations: {
       type: [Schema.Types.ObjectId],

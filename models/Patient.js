@@ -91,11 +91,7 @@ const patientSchema = new Schema(
       ref: "Consultation",
       default: [],
     },
-    reviewsDone: {
-      type: [Schema.Types.ObjectId],
-      ref: "Review",
-      default: [],
-    },
+    recommendedDoctors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Doctor' }],
   },
   { timestamps: true }
 );
