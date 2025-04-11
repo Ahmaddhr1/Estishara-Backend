@@ -477,7 +477,7 @@ router.post("/verify-token", async (req, res) => {
   }
 });
 
-router.post("/forget-password", authenticateToken, async (req, res) => {
+router.put("/forget-password", authenticateToken, async (req, res) => {
   try {
     let { email, password } = req.body;
     email = email.toLowerCase();
