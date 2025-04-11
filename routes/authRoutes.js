@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 const dotenv = require("dotenv");
-const Doctor = require("../models/Doctor");
 const Patient = require("../models/Patient");
 const admin = require("../config/firebaseConfig");
 const Speciality = require("../models/Speciality");
@@ -477,7 +476,7 @@ router.post("/verify-token", async (req, res) => {
   }
 });
 
-router.put("/forget-password", authenticateToken, async (req, res) => {
+router.put("/forget-password", authenticateToken , async (req, res) => {
   try {
     let { email, password } = req.body;
     email = email.toLowerCase();
