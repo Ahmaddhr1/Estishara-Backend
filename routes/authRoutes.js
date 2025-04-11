@@ -7,6 +7,7 @@ const Doctor = require("../models/Doctor");
 const Patient = require("../models/Patient");
 const admin = require("../config/firebaseConfig");
 const Speciality = require("../models/Speciality");
+const authenticateToken = require("../utils/middleware");
 dotenv.config();
 
 const router = express.Router();
@@ -467,5 +468,13 @@ router.post("/verify-token", async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+router.post("/forget-password",authenticateToken, async (req,res)=> {
+  try {
+    
+  } catch (error) {
+    
+  }
+})
 
 module.exports = router;

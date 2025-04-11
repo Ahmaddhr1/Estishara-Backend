@@ -137,7 +137,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
     const requestingUserRole = req.user.role;
     const requestingUserId = req.user.id;
 
-    console.log(requestingUserId)
+    console.log(requestingUserId);
 
     // Check if the user is the doctor themselves or an admin
     if (requestingUserRole !== "admin" && requestingUserId !== req.params.id) {
@@ -146,15 +146,16 @@ router.put("/:id", authenticateToken, async (req, res) => {
       });
     }
 
-    
-
-    const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const doctor = await Doctor.findByIdAndUpdate(
+      req.params.id,
+      req.body.doctor
+    );
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-    res.json({ doctor, message: "Doctor updated successfully" });
+    const docObj = doctor.toObject();
+    delete docObj.password;
+    res.json({ doctor: docObj, message: "Doctor updated successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
