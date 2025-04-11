@@ -49,7 +49,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: "Forbidden: You can only update your own profile" });
     }
 
-    const patient = await Patient.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const patient = await Patient.findByIdAndUpdate(req.params.id, req.body.patient, { new: true });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
