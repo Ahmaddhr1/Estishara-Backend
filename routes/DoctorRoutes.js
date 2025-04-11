@@ -150,7 +150,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-    res.json(doctor);
+    res.json({ doctor, message: "Doctor updated successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

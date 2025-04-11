@@ -403,35 +403,50 @@ router.post("/doctor-google", async (req, res) => {
   }
 });
 
-// ✅ Token Verification
+
 router.post("/verify-token", async (req, res) => {
   try {
-    // Extract token from Authorization header (Bearer <token>)
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
-      return res
-        .status(400)
-        .json({ error: "Authorization header is required" });
+      return res.status(400).json({ error: "Authorization header is required" });
     }
 
-    const token = authHeader.split(" ")[1]; // Get the token part (remove "Bearer" part)
+    const token = authHeader.split(" ")[1];
     if (!token) {
       return res.status(400).json({ error: "Token is required" });
     }
 
-    // Verify the token
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        return res.status(401).json({ error: "Invalid or expired token" });
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+      if (err) return res.status(401).json({ error: "Invalid or expired token" });
+
+      const { email, role } = decoded;
+
+      if (role === "doctor") {
+        const doctor = await Doctor.findOne({ email }).populate("specialityId").lean();
+        if (!doctor) return res.status(404).json({ error: "Doctor not found" });
+        delete doctor.password;
+        return res.status(200).json({
+          message: "Token is valid",
+          doctor,
+          role: "doctor"
+        });
       }
 
-      // Return the decoded user data if the token is valid
-      res.status(200).json({ message: "Token is valid", user: decoded });
+      if (role === "patient") {
+        const patient = await Patient.findOne({ email }).lean();
+        if (!patient) return res.status(404).json({ error: "Patient not found" });
+        delete patient.password;
+        return res.status(200).json({
+          message: "Token is valid",
+          patient,
+          role: "patient"
+        });
+      }
+
+      return res.status(400).json({ error: "Unknown user role" });
     });
   } catch (e) {
-    res
-      .status(500)
-      .json({ error: e.message, message: "Error verifying token" });
+    res.status(500).json({ error: e.message });
   }
 });
 
