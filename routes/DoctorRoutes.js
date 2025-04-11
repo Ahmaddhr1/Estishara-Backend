@@ -148,7 +148,8 @@ router.put("/:id", authenticateToken, async (req, res) => {
 
     const doctor = await Doctor.findByIdAndUpdate(
       req.params.id,
-      req.body.doctor
+      req.body.doctor,
+      { new: true } 
     );
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
