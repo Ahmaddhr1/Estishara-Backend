@@ -82,4 +82,24 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 
+router.get('/getrc/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patient = await Patient.findById(id).populate({
+      path: 'requestedConsultations',
+      populate: {
+        path: 'doctorId', 
+        select: 'name lastName profilePic email',
+      },
+    });
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found!' });
+    }
+    res.status(200).json({ patient });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching consultations for the patient.' });
+  }
+});
+
 module.exports = router;

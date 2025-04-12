@@ -10,7 +10,8 @@ const consultationSchema = new Schema({
   },
   duration: {
     type: Number,
-    required: false,
+    required: true,
+    default: 60,
   },
   patientId: {
     type: Schema.Types.ObjectId,

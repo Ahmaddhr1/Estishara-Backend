@@ -299,4 +299,24 @@ router.get("/topten", async (req, res) => {
   }
 });
 
+router.get('/getrc/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doctor = await Doctor.findById(id).populate({
+      path: 'pendingConsultations',
+      populate: {
+        path: 'patientId', 
+        select: 'name lastName profilePic email',
+      },
+    });
+    if (!doctor) {
+      return res.status(404).json({ message: 'doctor not found!' });
+    }
+    res.status(200).json({ doctor });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching consultations for the doctor.' });
+  }
+});
+
 module.exports = router;
