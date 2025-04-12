@@ -149,12 +149,14 @@ router.put("/:id", authenticateToken, async (req, res) => {
     const doctor = await Doctor.findByIdAndUpdate(
       req.params.id,
       req.body.doctor,
-      { new: true } 
+      { new: true }
     );
+    const savedDoctor = await doctor.save();
+    await savedDoctor.populate("specialityId", "title");
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-    const docObj = doctor.toObject();
+    const docObj = savedDoctor.toObject();
     delete docObj.password;
     res.json({ doctor: docObj, message: "Doctor updated successfully" });
   } catch (err) {

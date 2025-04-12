@@ -7,6 +7,7 @@ const specialityRoutes = require("../routes/specialityRoutes.js");
 const patientRoutes = require("../routes/patientRoutes.js");
 const adminRoutes = require("../routes/adminRoutes.js");
 const bannerRoutes = require("../routes/bannerRoutes.js");
+const consultationRoutes = require("../routes/consultationRoutes.js")
 const connectDB = require("../config/database.js");
 
 try {
@@ -23,6 +24,7 @@ app.use("/api/speciality", specialityRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/banner", bannerRoutes);
+app.use("/api/consultation",consultationRoutes)
 
 
 app.get("/", (req, res) => {

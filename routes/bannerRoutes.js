@@ -4,7 +4,7 @@ const Banner = require("../models/Banner");
 const authenticateToken = require("../utils/middleware");
 
 
-router.get("/", authenticateToken, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const banners = await Banner.find({}).sort({ createdAt: -1 });
     if (!banners.length) {

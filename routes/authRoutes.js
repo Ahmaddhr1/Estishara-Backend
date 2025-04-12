@@ -92,6 +92,11 @@ router.post("/request-otp", async (req, res) => {
     });
 
     const data = await response.json();
+    if (response.ok) {
+      console.log("Email sent successfully:", data);
+    } else {
+      console.error("Failed to send email:", data);
+    }
     res.json({ message: "OTP sent successfully", otpToken });
   } catch (error) {
     res
@@ -144,7 +149,7 @@ router.post("/doctor/register", async (req, res) => {
     });
 
     const savedDoctor = await newDoctor.save();
-    await savedDoctor.populate("specialityId");
+    await savedDoctor.populate('specialityId', 'title');
 
     const speciality = await Speciality.findById(specialityId);
     if (!speciality) {
