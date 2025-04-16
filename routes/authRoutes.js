@@ -75,7 +75,7 @@ router.post("/request-otp", async (req, res) => {
     const url = process.env.BREVO_URL;
 
     const emailData = {
-      sender: { name: "Estishara", email: "tajrobeahmad@gmail.com" },
+      sender: { name: "Estishara", email: "ka530893@gmail.com" },
       to: [{ email }],
       subject: "Your OTP Code",
       htmlContent: `<p>Your OTP code is :</p><br/><h1>${otp}</h1><p><strong>Note:</strong> It will expire in 5 minutes.</p><br/><h3>Estishara Team,</h3>`,
