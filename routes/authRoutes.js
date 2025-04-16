@@ -121,19 +121,19 @@ router.post("/doctor/register", async (req, res) => {
     } = req.body;
     let email1 = email.toLowerCase();
 
-    // try {
-    //   const decoded = await jwt.verify(otpToken, process.env.OTP_SECRET);
-    //   if (decoded.otp !== otpCode) {
-    //     return res.status(400).json({ error: "Invalid OTP" });
-    //   }
-    //   if (decoded.email !== email1) {
-    //     return res
-    //       .status(400)
-    //       .json({ error: "Email does not match OTP request" });
-    //   }
-    // } catch (err) {
-    //   return res.status(400).json({ error: "Expired or invalid OTP" });
-    // }
+    try {
+      const decoded = await jwt.verify(otpToken, process.env.OTP_SECRET);
+      if (decoded.otp !== otpCode) {
+        return res.status(400).json({ error: "Invalid OTP" });
+      }
+      if (decoded.email !== email1) {
+        return res
+          .status(400)
+          .json({ error: "Email does not match OTP request" });
+      }
+    } catch (err) {
+      return res.status(400).json({ error: "Expired or invalid OTP" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -258,19 +258,19 @@ router.post("/patient/register", async (req, res) => {
       otpCode,
     } = req.body;
     let email1 = email.toLowerCase();
-    // try {
-    //   const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
-    //   if (decoded.otp !== otpCode) {
-    //     return res.status(400).json({ error: "Invalid OTP" });
-    //   }
-    //   if (decoded.email !== email1) {
-    //     return res
-    //       .status(400)
-    //       .json({ error: "Email does not match OTP request" });
-    //   }
-    // } catch (err) {
-    //   return res.status(400).json({ error: "Expired or invalid OTP" });
-    // }
+    try {
+      const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
+      if (decoded.otp !== otpCode) {
+        return res.status(400).json({ error: "Invalid OTP" });
+      }
+      if (decoded.email !== email1) {
+        return res
+          .status(400)
+          .json({ error: "Email does not match OTP request" });
+      }
+    } catch (err) {
+      return res.status(400).json({ error: "Expired or invalid OTP" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
