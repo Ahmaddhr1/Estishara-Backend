@@ -66,12 +66,10 @@ router.get("/pending", async (req, res) => {
   try {
     const doctors = await Doctor.find({
       isPendingDoctor: true,
-    }).populate("specialityId");
+    }).populate("specialityId","title");
 
-    if (!doctors.length) {
-      return res.status(404).json({ message: "Doctors not found" });
-    }
-    res.json(doctors);
+
+    res.status(200).json(doctors);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -285,7 +283,7 @@ router.post("/addrecommendation/:id", authenticateToken, async (req, res) => {
 router.get("/topten", async (req, res) => {
   try {
     const doctors = await Doctor.find({ isPendingDoctor: false })
-      .sort({ nbRecommendation: -1 })
+      .sort({ "recommendedBy.length": -1 })  // Sort by recommendedBy array length in descending order
       .limit(10)
       .populate("specialityId");
 
