@@ -50,7 +50,7 @@ const doctorSchema = new Schema(
       max: 100,
       default: 20, // Default to 50 if not provided
     },
-    recommendedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Patient' }],
+    recommendedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Patient' } ],
     workingAt: {
       type: String,
       required: true,
