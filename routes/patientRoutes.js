@@ -77,7 +77,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    res.json(sanitizePatient(patient));
+    res.json({ patient: sanitizePatient(patient) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
