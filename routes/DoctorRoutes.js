@@ -83,8 +83,10 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
 
 router.get("/pending", async (req, res) => {
   try {
-    const doctors = await Doctor.find({ isPendingDoctor: true })
-      .populate("specialityId", "title");
+    const doctors = await Doctor.find({ isPendingDoctor: true }).populate(
+      "specialityId",
+      "title"
+    );
     res.status(200).json(sanitizeDoctors(doctors));
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -141,7 +143,7 @@ router.get("/topten", async (req, res) => {
       select: "title",
     });
 
-    res.status(200).json(sanitizeDoctors(populatedDoctors));
+    res.status(200).json({ doctor: sanitizeDoctors(populatedDoctors) });
   } catch (error) {
     console.error("Error fetching top doctors:", error);
     return res.status(500).json({ message: error.message });
@@ -150,8 +152,9 @@ router.get("/topten", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const doctor = await Doctor.findById(req.params.id)
-      .populate("specialityId");
+    const doctor = await Doctor.findById(req.params.id).populate(
+      "specialityId"
+    );
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
@@ -296,7 +299,9 @@ router.post("/addrecommendation/:id", authenticateToken, async (req, res) => {
     await patient.save();
 
     res.status(200).json({
-      message: hasRecommended ? "Recommendation removed." : "Recommendation added.",
+      message: hasRecommended
+        ? "Recommendation removed."
+        : "Recommendation added.",
     });
   } catch (e) {
     res.status(500).json({ message: e.message });
@@ -321,7 +326,9 @@ router.get("/getrc/:id", async (req, res) => {
     res.status(200).json({ doctor: sanitizeDoctor(doctor) });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error fetching consultations for the doctor." });
+    res
+      .status(500)
+      .json({ message: "Error fetching consultations for the doctor." });
   }
 });
 
