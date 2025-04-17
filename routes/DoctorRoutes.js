@@ -5,16 +5,11 @@ const Speciality = require("../models/Speciality");
 const Patient = require("../models/Patient");
 const authenticateToken = require("../utils/middleware");
 const mongoose = require("mongoose");
+const {sanitizeDoctor,sanitizeDoctors} = require("../utils/sanitize");
+
 
 // Utility to remove password from doctor object
-function sanitizeDoctor(doctor) {
-  const doc = doctor.toObject();
-  delete doc.password;
-  return doc;
-}
-function sanitizeDoctors(doctors) {
-  return doctors.map(sanitizeDoctor);
-}
+
 
 router.get("/", async (req, res) => {
   try {

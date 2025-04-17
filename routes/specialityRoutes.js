@@ -3,6 +3,7 @@ const router = express.Router();
 const Speciality = require("../models/Speciality");
 const Doctor = require("../models/Doctor");
 const authenticateToken = require("../utils/middleware");
+const {sanitizeDoctors} = require("../utils/sanitize");
 
 // GET all specialities (Accessible by anyone)
 router.get("/", async (req, res) => {
@@ -34,10 +35,13 @@ router.get("/:id", async (req, res) => {
       "name"
     );
 
+
     if (!doctors) {
       return res.status(404).json({ message: "No doctors found" });
     }
-    res.status(200).json(doctors);
+
+
+    res.status(200).json(sanitizeDoctors(doctors));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
