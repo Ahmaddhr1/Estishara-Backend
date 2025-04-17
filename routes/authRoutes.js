@@ -149,7 +149,7 @@ router.post("/doctor/register", async (req, res) => {
     });
 
     const savedDoctor = await newDoctor.save();
-    await savedDoctor.populate('specialityId', 'title');
+    await savedDoctor.populate("specialityId", "title");
 
     const speciality = await Speciality.findById(specialityId);
     if (!speciality) {
@@ -481,29 +481,45 @@ router.post("/verify-token", async (req, res) => {
   }
 });
 
-router.put("/forget-password", authenticateToken , async (req, res) => {
+router.put("/forget-password-k", authenticateToken, async (req, res) => {
   try {
-    let { email, password } = req.body;
-    email = email.toLowerCase();
+    const { id, password, oldPassword } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const isPatient = await Patient.findOne({ email });
-    if (isPatient) {
-      isPatient.password = hashedPassword;
-      await isPatient.save();
-      return res.status(200).json({ message: "Patient password updated successfully" });
+    // Try finding the user in Patient collection
+    let user = await Patient.findById(id);
+
+    if (user) {
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Old password is incorrect" });
+      }
+
+      user.password = hashedPassword;
+      await user.save();
+      return res
+        .status(200)
+        .json({ message: "Patient password updated successfully" });
     }
 
-    const doctor = await Doctor.findOne({ email });
-    if (doctor) {
-      doctor.password = hashedPassword;
-      await doctor.save();
-      return res.status(200).json({ message: "Doctor password updated successfully" });
+    // Try finding the user in Doctor collection
+    user = await Doctor.findById(id);
+
+    if (user) {
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Old password is incorrect" });
+      }
+
+      user.password = hashedPassword;
+      await user.save();
+      return res
+        .status(200)
+        .json({ message: "Doctor password updated successfully" });
     }
 
     return res.status(404).json({ message: "User not found" });
-
   } catch (error) {
     console.error("Forget password error:", error.message);
     res.status(500).json({ message: "Internal Server Error" });

@@ -67,12 +67,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     await Patient.findByIdAndUpdate(req.params.id, req.body.patient, { new: true });
 
-    const updatedPatient = await Patient.findById(req.params.id); // re-fetch the latest
+    const updatedPatient = await Patient.findById(req.params.id); 
     if (!updatedPatient) {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    res.json({ patient: sanitizePatient(updatedPatient) }); // ✅ correct wrapping
+    res.json({ patient: sanitizePatient(updatedPatient) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
