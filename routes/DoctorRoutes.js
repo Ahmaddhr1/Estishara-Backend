@@ -25,38 +25,50 @@ router.get("/", async (req, res) => {
 });
 router.get("/search-filter", authenticateToken, async (req, res) => {
   try {
-    const { name, responseTime, specialityId, minFee, maxFee } = req.query;
+    const {
+      responseTime,
+      specialityId,
+      minFee,
+      maxFee,
+      page = 1,
+      limit = 10,
+    } = req.query;
 
-    const query = {};
+    const query = { isPendingDoctor: false };
 
-    if (name) {
-      query.name = { $regex: new RegExp(name, "i") };
-    }
-
-    // Response time (<=)
     if (responseTime) {
       query.responseTime = { $lte: parseInt(responseTime) };
     }
 
-    // Match by speciality ID
     if (specialityId) {
       query.specialityId = specialityId;
     }
 
-    // Consultation fee (price) range
     if (minFee || maxFee) {
       query.consultationFee = {};
       if (minFee) query.consultationFee.$gte = parseFloat(minFee);
       if (maxFee) query.consultationFee.$lte = parseFloat(maxFee);
     }
 
-    const doctors = await Doctor.find(query).populate("specialityId");
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const doctors = await Doctor.find(query)
+      .populate("specialityId")
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Doctor.countDocuments(query);
 
     if (!doctors.length) {
       return res.status(404).json({ message: "No doctors matched the filter" });
     }
 
-    res.json(doctors);
+    res.json({
+      total,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(total / limit),
+      doctors,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -76,41 +88,36 @@ router.get("/pending", async (req, res) => {
 
 router.get("/search", async (req, res) => {
   try {
-    const { name, respondTime, specialityId, consultationFees } = req.query;
+    const { name, page = 1, limit = 10 } = req.query;
+
+    if (!name || name.trim() === "") {
+      return res
+        .status(400)
+        .json({ message: "Name is required for basic search" });
+    }
 
     const query = {
-      isPendingDoctor: false, // show only approved doctors
+      name: { $regex: name, $options: "i" }, // Partial, case-insensitive match
+      isPendingDoctor: false,
     };
 
-    // Search by name (case-insensitive)
-    if (name) {
-      query.name = { $regex: name, $options: "i" };
-    }
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    // Filter by respondTime (less than or equal)
-    if (respondTime) {
-      query.respondTime = { $lte: parseInt(respondTime) };
-    }
+    const doctors = await Doctor.find(query)
+      .populate("specialityId")
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    // Filter by consultationFees (less than or equal)
-    if (consultationFees) {
-      query.consultationFees = { $lte: parseInt(consultationFees) };
-    }
+    const total = await Doctor.countDocuments(query);
 
-    // Filter by specialityId (exact match)
-    if (specialityId) {
-      query.specialityId = specialityId;
-    }
-
-    const doctors = await Doctor.find(query).populate("specialityId");
-
-    if (!doctors.length) {
-      return res.status(404).json({ message: "No matching doctors found" });
-    }
-
-    res.json(doctors);
+    res.json({
+      total,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(total / limit),
+      doctors,
+    });
   } catch (err) {
-    console.error("Search error:", err);
+    console.error("Basic search error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -150,7 +157,6 @@ router.get("/topten", async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 });
-
 
 router.get("/:id", async (req, res) => {
   try {
@@ -315,9 +321,6 @@ router.post("/addrecommendation/:id", authenticateToken, async (req, res) => {
     return res.status(500).json({ message: e.message });
   }
 });
-
-
-
 
 router.get("/getrc/:id", async (req, res) => {
   try {
