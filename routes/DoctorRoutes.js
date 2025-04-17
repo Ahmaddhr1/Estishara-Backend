@@ -136,7 +136,7 @@ router.get("/topten", async (req, res) => {
       { $addFields: { nbRecommendations: { $size: "$recommendedBy" } } },
       { $sort: { nbRecommendations: -1 } },
       { $limit: 10 },
-      { $project: { password: 0 } }
+      { $project: { password: 0 } } 
     ]);
 
     const populatedDoctors = await Doctor.populate(doctors, {
@@ -144,7 +144,7 @@ router.get("/topten", async (req, res) => {
       select: "title",
     });
 
-    res.status(200).json({ doctor: populatedDoctors });
+    res.status(200).json( populatedDoctors );
   } catch (error) {
     console.error("Error fetching top doctors:", error);
     return res.status(500).json({ message: error.message });
