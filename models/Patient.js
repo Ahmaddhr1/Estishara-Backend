@@ -7,9 +7,9 @@ const patientSchema = new Schema(
       type: String,
       required: true,
     },
-    lastName:{
-      type:String,
-      required:true
+    lastName: {
+      type: String,
+      required: true,
     },
     email: {
       type: String,
@@ -22,7 +22,7 @@ const patientSchema = new Schema(
     },
     age: {
       type: Number,
-      default:-1
+      default: -1,
     },
     phoneNumber: {
       type: Number,
@@ -34,11 +34,11 @@ const patientSchema = new Schema(
     },
     weight: {
       type: Number,
-      default:-1
+      default: -1,
     },
     height: {
       type: Number,
-      default:-1
+      default: -1,
     },
     smooking: {
       type: Boolean,
@@ -58,8 +58,18 @@ const patientSchema = new Schema(
     },
     bloodType: {
       type: String,
-      enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-","Select Blood Type"],
-      default:"Select Blood Type"
+      enum: [
+        "A+",
+        "A-",
+        "B+",
+        "B-",
+        "O+",
+        "O-",
+        "AB+",
+        "AB-",
+        "Select Blood Type",
+      ],
+      default: "Select Blood Type",
     },
     alergicType: {
       type: String,
@@ -71,8 +81,8 @@ const patientSchema = new Schema(
     },
     gender: {
       type: String,
-      enum: ["Male", "Female","Select Gender"],
-      default:"Select Gender"
+      enum: ["Male", "Female", "Select Gender"],
+      default: "Select Gender",
     },
     medicationType: {
       type: String,
@@ -91,7 +101,15 @@ const patientSchema = new Schema(
       ref: "Consultation",
       default: [],
     },
-    recommendedDoctors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Doctor' }],
+    recommendedDoctors: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Doctor" },
+    ],
+    notificationsRecieved: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Notification",
+      },
+    ],
   },
   { timestamps: true }
 );

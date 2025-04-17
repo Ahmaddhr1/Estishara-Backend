@@ -48,9 +48,9 @@ const doctorSchema = new Schema(
       required: true,
       min: 20,
       max: 100,
-      default: 20, 
+      default: 20,
     },
-    recommendedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Patient' } ],
+    recommendedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "Patient" }],
     workingAt: {
       type: String,
       required: true,
@@ -87,7 +87,7 @@ const doctorSchema = new Schema(
     },
     isPendingDoctor: {
       type: Boolean,
-      default: true, 
+      default: true,
     },
     profilePic: {
       type: String,
@@ -104,8 +104,14 @@ const doctorSchema = new Schema(
     pendingConsultations: {
       type: [Schema.Types.ObjectId],
       ref: "Consultation",
-      default: [], 
+      default: [],
     },
+    notificationsRecieved: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Notification",
+      },
+    ],
   },
   { timestamps: true }
 );

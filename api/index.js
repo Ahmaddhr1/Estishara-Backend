@@ -8,7 +8,8 @@ const patientRoutes = require("../routes/patientRoutes.js");
 const adminRoutes = require("../routes/adminRoutes.js");
 const bannerRoutes = require("../routes/bannerRoutes.js");
 const consultationRoutes = require("../routes/consultationRoutes.js")
-const dashboardRoutes = require("../routes/dashboardRoutes.js")
+const dashboardRoutes = require("../routes/dashboardRoutes.js");
+const notificationRoutes =require("../routes/notificationRoutes.js")
 const connectDB = require("../config/database.js");
 
 try {
@@ -27,6 +28,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/banner", bannerRoutes);
 app.use("/api/consultation",consultationRoutes)
 app.use("/api/dashboard",dashboardRoutes);
+app.use("/api/notification",notificationRoutes)
 
 
 app.get("/", (req, res) => {
