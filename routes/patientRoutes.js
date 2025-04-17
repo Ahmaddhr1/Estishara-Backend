@@ -56,28 +56,23 @@ router.get("/:id", async (req, res) => {
 });
 
 // PUT (update) patient profile
-router.put("/:id", authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const requestingUserId = req.user.id;
     const requestingUserRole = req.user.role;
 
-    if (requestingUserRole !== "admin" && requestingUserId !== req.params.id) {
-      return res.status(403).json({
-        error: "Forbidden: You can only update your own profile",
-      });
+    if (requestingUserRole !== 'admin' && requestingUserId !== req.params.id) {
+      return res.status(403).json({ error: "Forbidden: You can only update your own profile" });
     }
 
-    const patient = await Patient.findByIdAndUpdate(
-      req.params.id,
-      req.body.patient,
-      { new: true }
-    );
+    await Patient.findByIdAndUpdate(req.params.id, req.body.patient, { new: true });
 
-    if (!patient) {
+    const updatedPatient = await Patient.findById(req.params.id); // re-fetch the latest
+    if (!updatedPatient) {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    res.json({ patient: sanitizePatient(patient) });
+    res.json({ patient: sanitizePatient(updatedPatient) }); // ✅ correct wrapping
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
