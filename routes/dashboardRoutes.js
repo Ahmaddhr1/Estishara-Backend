@@ -39,7 +39,13 @@ router.get("/summary", async (req, res) => {
     const startOfWeek = getStartOfWeek();
     const startOfLastWeek = getStartOfLastWeek();
 
-    const [consultsToday, consultsYesterday, consultsWeek, consultsLastWeek, totalConsults] = await Promise.all([
+    const [
+      consultsToday,
+      consultsYesterday,
+      consultsWeek,
+      consultsLastWeek,
+      totalConsults
+    ] = await Promise.all([
       Consultation.countDocuments({ createdAt: { $gte: startOfDay } }),
       Consultation.countDocuments({ createdAt: { $gte: startOfYesterday, $lt: startOfDay } }),
       Consultation.countDocuments({ createdAt: { $gte: startOfWeek } }),
@@ -47,7 +53,13 @@ router.get("/summary", async (req, res) => {
       Consultation.countDocuments()
     ]);
 
-    const [patientsToday, patientsYesterday, patientsWeek, patientsLastWeek, totalPatients] = await Promise.all([
+    const [
+      patientsToday,
+      patientsYesterday,
+      patientsWeek,
+      patientsLastWeek,
+      totalPatients
+    ] = await Promise.all([
       Patient.countDocuments({ createdAt: { $gte: startOfDay } }),
       Patient.countDocuments({ createdAt: { $gte: startOfYesterday, $lt: startOfDay } }),
       Patient.countDocuments({ createdAt: { $gte: startOfWeek } }),
@@ -55,7 +67,14 @@ router.get("/summary", async (req, res) => {
       Patient.countDocuments()
     ]);
 
-    const [doctorsToday, doctorsYesterday, doctorsWeek, doctorsLastWeek, totalDoctors, pendingDoctors] = await Promise.all([
+    const [
+      doctorsToday,
+      doctorsYesterday,
+      doctorsWeek,
+      doctorsLastWeek,
+      totalDoctors,
+      pendingDoctors
+    ] = await Promise.all([
       Doctor.countDocuments({ createdAt: { $gte: startOfDay } }),
       Doctor.countDocuments({ createdAt: { $gte: startOfYesterday, $lt: startOfDay } }),
       Doctor.countDocuments({ createdAt: { $gte: startOfWeek } }),

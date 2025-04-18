@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Patient = require("../models/Patient");
 const authenticateToken = require("../utils/middleware");
-
 // Utility functions
 function sanitizePatient(patient) {
   const pat = patient.toObject();
@@ -78,7 +77,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// DELETE patient
+
+
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const requestingUserId = req.user.id;
