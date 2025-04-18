@@ -196,7 +196,7 @@ router.post("/refresh-token", async (req, res) => {
         return res.status(401).json({ error: "Invalid or expired refresh token" });
       }
 
-      const { email, role, id } = decoded; // Ensure we get id here
+      const { id, email, role } = decoded; // Ensure we get id here
 
       // Generate new tokens (ensure that id is passed in the payload)
       const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded);
@@ -211,6 +211,7 @@ router.post("/refresh-token", async (req, res) => {
           refreshToken: newRefreshToken,
           doctor,
           role,
+          id,  // Include the id here in the response
         });
       } else if (role === "patient") {
         const patient = await Patient.findOne({ email }).lean();
@@ -222,6 +223,7 @@ router.post("/refresh-token", async (req, res) => {
           refreshToken: newRefreshToken,
           patient,
           role,
+          id,  // Include the id here in the response
         });
       } else {
         return res.status(400).json({ error: "Unknown user role" });
@@ -231,7 +233,6 @@ router.post("/refresh-token", async (req, res) => {
     res.status(500).json({ error: e.message || "Unexpected error during refresh" });
   }
 });
-
 router.post("/patient/register", async (req, res) => {
   try {
     const {
