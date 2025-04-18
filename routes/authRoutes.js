@@ -320,7 +320,7 @@ router.post("/login", async (req, res) => {
     const emailNormalized = email.toLowerCase().trim();
 
     // Optional email format check
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(emailNormalized)) {
       return res.status(400).json({ error: "Invalid email format!" });
     }
@@ -349,9 +349,20 @@ router.post("/login", async (req, res) => {
     const userObject = user.toObject();
     delete userObject.password;
 
-    res.status(200).json({
+    // Here we send the response with the role-specific key
+    if (role === "doctor") {
+      return res.status(200).json({
+        message: "Login successful",
+        doctor: userObject, // Return doctor object
+        accessToken,
+        refreshToken,
+        role,
+      });
+    }
+
+    return res.status(200).json({
       message: "Login successful",
-      user: userObject,
+      patient: userObject, // Return patient object
       accessToken,
       refreshToken,
       role,
