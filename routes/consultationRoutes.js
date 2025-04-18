@@ -257,7 +257,7 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: process.env.PAYTABS_KEY, // Ensure PayTabs Key is correct
+          "Authorization": `Bearer ${process.env.PAYTABS_KEY}`, // Ensure PayTabs Key is correct
         },
       }
     );
