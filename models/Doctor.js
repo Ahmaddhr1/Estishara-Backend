@@ -112,6 +112,11 @@ const doctorSchema = new Schema(
         ref: "Notification",
       },
     ],
+    acceptedConsultations: {
+      type: [Schema.Types.ObjectId],
+      ref: "Consultation",
+      default: [],
+    },
   },
   { timestamps: true }
 );

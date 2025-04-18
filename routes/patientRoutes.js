@@ -55,7 +55,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // PUT (update) patient profile
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken , async (req, res) => {
   try {
     const requestingUserId = req.user.id;
     const requestingUserRole = req.user.role;

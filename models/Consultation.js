@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const consultationSchema = new Schema({
   status: {
     type: String,
-    enum: ["requested", "confirmed", "canceled", "complete"],
+    enum: ["requested", "accepted","paid"],
     required: true,
     default: "requested",
   },
@@ -22,6 +22,9 @@ const consultationSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Doctor',
     required: true
+  },
+  respondTime:{
+    type:Number,
   },
 }, { timestamps: true });
 

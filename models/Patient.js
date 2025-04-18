@@ -110,6 +110,11 @@ const patientSchema = new Schema(
         ref: "Notification",
       },
     ],
+    historyConsultations: {
+      type: [Schema.Types.ObjectId],
+      ref: "Consultation",
+      default: [],
+    },
   },
   { timestamps: true }
 );
