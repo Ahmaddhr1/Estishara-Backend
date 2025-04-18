@@ -76,7 +76,7 @@ router.delete("/requested/:id", authenticateToken, async (req, res) => {
 });
 
 // Accept consultation (doctor confirms, waiting for payment)
-router.put("/accept/:consultationId", authenticateToken, async (req, res) => {
+router.put("/accept/:consultationId",  /*authenticateToken ,*/ async (req, res) => {
   try {
     const { consultationId } = req.params;
     const doctorId = req.user.id;
@@ -86,11 +86,11 @@ router.put("/accept/:consultationId", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Consultation not found" });
     }
 
-    if (consultation.doctorId.toString() !== doctorId) {
-      return res
-        .status(403)
-        .json({ message: "Forbidden: Not your consultation" });
-    }
+    // if (consultation.doctorId.toString() !== doctorId) {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "Forbidden: Not your consultation" });
+    // }
 
     consultation.status = "accepted";
     await consultation.save();
@@ -106,7 +106,7 @@ router.put("/accept/:consultationId", authenticateToken, async (req, res) => {
 });
 
 // Finalize payment (confirmed by doctor)
-router.put("/paid/:consultationId", authenticateToken, async (req, res) => {
+router.put("/paid/:consultationId", /*authenticateToken ,*/ async (req, res) => {
   try {
     const { consultationId } = req.params;
     const doctorId = req.user.id;
@@ -116,11 +116,11 @@ router.put("/paid/:consultationId", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Consultation not found" });
     }
 
-    if (consultation.doctorId.toString() !== doctorId) {
-      return res
-        .status(403)
-        .json({ message: "Forbidden: You are not the assigned doctor" });
-    }
+    // if (consultation.doctorId.toString() !== doctorId) {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "Forbidden: You are not the assigned doctor" });
+    // }
 
     const doctor = await Doctor.findById(doctorId);
     const patient = await Patient.findById(consultation.patientId);
