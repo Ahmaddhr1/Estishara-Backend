@@ -212,7 +212,7 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
       cart_currency: "USD",
       cart_amount: amount,
       cart_description: `Consultation with Dr. ${doctor.name} ${doctor.lastName}`,
-      callback: "https://localhost:3001/api/consultation/paytabs/callback",
+      callback: "https://estishara-backend.vercel.app/api/consultation/paytabs/callback",
       return: "https://localhost:3001/payment-success",
       
       // Customer details (only essential info)
