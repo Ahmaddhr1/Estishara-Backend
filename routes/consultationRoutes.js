@@ -239,7 +239,7 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
     };
     // Make the PayTabs API request to create the payment link
     const response = await axios.post(
-      "https://www.paytabs.com/payment/api/create",
+      "https://www.sandbox.paytabs.com/payment/api/create",
       paymentRequest,
       {
         headers: {
@@ -248,9 +248,6 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
         },
       }
     );
-
-    
-
     // Extract the payment URL and send it to the frontend
     const paymentUrl = response.data.redirect_url;
     res.json({ payment_url: paymentUrl });
