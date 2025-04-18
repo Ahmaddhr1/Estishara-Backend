@@ -27,8 +27,7 @@ const generateTokens = (user) => {
   const payload = {
     id: user._id,
     email: user.email,
-    role: role, // inferred role
-    uuid: uniqueAddition, // optional
+    role: role,
   };
 
   const accessToken = jwt.sign(payload, secretKey, { expiresIn: "1h" });
@@ -183,9 +182,7 @@ router.post("/refresh-token", async (req, res) => {
   try {
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
-      return res
-        .status(400)
-        .json({ error: "Authorization header is required" });
+      return res.status(400).json({ error: "Authorization header is required" });
     }
 
     const refreshToken = authHeader.split(" ")[1];
@@ -193,28 +190,22 @@ router.post("/refresh-token", async (req, res) => {
       return res.status(400).json({ error: "Refresh token is required" });
     }
 
-    // Verify the refresh token
+    // Verify the refresh token and ensure id is included
     jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {
-        return res
-          .status(401)
-          .json({ error: "Invalid or expired refresh token" });
+        return res.status(401).json({ error: "Invalid or expired refresh token" });
       }
 
-      const { email, role } = decoded;
+      const { email, role, id } = decoded; // Ensure we get id here
 
-      // Generate new tokens
-      const { accessToken, refreshToken: newRefreshToken } =
-        generateTokens(decoded);
+      // Generate new tokens (ensure that id is passed in the payload)
+      const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded);
 
       if (role === "doctor") {
-        const doctor = await Doctor.findOne({ email })
-          .populate("specialityId")
-          .lean();
+        const doctor = await Doctor.findOne({ email }).populate("specialityId").lean();
         if (!doctor) return res.status(404).json({ error: "Doctor not found" });
 
-        delete doctor.password;
-
+        delete doctor.password;  // Remove password from the response
         return res.status(200).json({
           accessToken,
           refreshToken: newRefreshToken,
@@ -223,11 +214,9 @@ router.post("/refresh-token", async (req, res) => {
         });
       } else if (role === "patient") {
         const patient = await Patient.findOne({ email }).lean();
-        if (!patient)
-          return res.status(404).json({ error: "Patient not found" });
+        if (!patient) return res.status(404).json({ error: "Patient not found" });
 
-        delete patient.password;
-
+        delete patient.password;  // Remove password from the response
         return res.status(200).json({
           accessToken,
           refreshToken: newRefreshToken,
@@ -239,9 +228,7 @@ router.post("/refresh-token", async (req, res) => {
       }
     });
   } catch (e) {
-    res
-      .status(500)
-      .json({ error: e.message || "Unexpected error during refresh" });
+    res.status(500).json({ error: e.message || "Unexpected error during refresh" });
   }
 });
 
@@ -458,34 +445,27 @@ router.post("/verify-token", async (req, res) => {
       if (err)
         return res.status(401).json({ error: "Invalid or expired token" });
 
-      const { email, role } = decoded;
+      const { id, email, role } = decoded;  // Extract id from the decoded token
 
+      // Ensure the ID in the token matches the one in the database
+      let user;
       if (role === "doctor") {
-        const doctor = await Doctor.findOne({ email })
-          .populate("specialityId")
-          .lean();
-        if (!doctor) return res.status(404).json({ error: "Doctor not found" });
-        delete doctor.password;
-        return res.status(200).json({
-          message: "Token is valid",
-          doctor,
-          role: "doctor",
-        });
+        user = await Doctor.findById(id).lean();  // Use id for doctor lookup
+      } else if (role === "patient") {
+        user = await Patient.findById(id).lean();  // Use id for patient lookup
       }
 
-      if (role === "patient") {
-        const patient = await Patient.findOne({ email }).lean();
-        if (!patient)
-          return res.status(404).json({ error: "Patient not found" });
-        delete patient.password;
-        return res.status(200).json({
-          message: "Token is valid",
-          patient,
-          role: "patient",
-        });
+      if (!user) {
+        return res.status(404).json({ error: "User not found or ID mismatch" });
       }
 
-      return res.status(400).json({ error: "Unknown user role" });
+      delete user.password;  // Remove sensitive info like password
+
+      return res.status(200).json({
+        message: "Token is valid",
+        user,
+        role,
+      });
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
