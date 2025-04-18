@@ -122,7 +122,7 @@ router.put("/paid/:consultationId", /*authenticateToken ,*/ async (req, res) => 
     //     .json({ message: "Forbidden: You are not the assigned doctor" });
     // }
 
-    const doctor = await Doctor.findById(doctorId);
+    const doctor = await Doctor.findById(consultation.doctorId);
     const patient = await Patient.findById(consultation.patientId);
 
     if (!doctor || !patient) {
