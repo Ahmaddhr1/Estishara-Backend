@@ -197,12 +197,6 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
 
     const patient = consultation.patientId;
 
-    // Log the payment request to check if all data is correct
-    console.log("Creating payment request for consultation:", consultation._id);
-    console.log("Doctor:", doctor);
-    console.log("Patient:", patient);
-    console.log("Amount:", amount);
-
     // Prepare the payment request body for PayTabs API
     const paymentRequest = {
       profile_id: process.env.PAYTABS_ID,
@@ -243,31 +237,22 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
       show_shipping: "no",
       show_billing: "no"
     };
-
-    // Log the full payment request data for debugging
-    console.log(
-      "Payment Request Data:",
-      JSON.stringify(paymentRequest, null, 2)
-    );
-
     // Make the PayTabs API request to create the payment link
     const response = await axios.post(
-      "https://secure-global.paytabs.com/payment/request",
+      "https://www.paytabs.com/payment/api/create",
       paymentRequest,
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.PAYTABS_KEY}`, // Ensure PayTabs Key is correct
+          Authorization: `${process.env.PAYTABS_KEY}`, // Ensure PayTabs Key is correct
         },
       }
     );
 
-    // Log the response from PayTabs
-    console.log("PayTabs Response:", response.data);
+    
 
     // Extract the payment URL and send it to the frontend
     const paymentUrl = response.data.redirect_url;
-    console.log("Payment URL:", paymentUrl); // Log the URL for debugging
     res.json({ payment_url: paymentUrl });
   } catch (err) {
     console.error(
@@ -283,6 +268,7 @@ router.post("/paytabs/callback", async (req, res) => {
   try {
     console.log("Route hittteddddddddddddddd")
     const { cart_id, tran_ref, payment_result } = req.body;
+    console.log(cart_id, tran_ref, payment_result);
     const consultationId = cart_id.split("_")[1]; // Extract consultation ID from cart_id
 
     // Step 1: Fetch the consultation, doctor, and patient details
