@@ -123,17 +123,17 @@ router.post("/paytabs/callback", async (req, res) => {
 
     const consultation = await Consultation.findById(consultationId).populate("doctorId");
     if (!consultation || !consultation.doctorId) {
-      return res.status(404).send("Consultation or doctor not found");
+      return res.status(404).json({error:"Consultation or doctor not found"});
     }
 
     const doctor = consultation.doctorId;
     const patient = await Patient.findById(consultation.patientId);
     if (!patient) {
-      return res.status(404).send("Patient not found");
+      return res.status(404).json({error:"Patient not found"});
     }
 
     if (payment_result.response_status !== "A") {
-      return res.status(400).send("Payment not successful");
+      return res.status(400).json({error:"Payment not successful"});
     }
 
     const fullAmount = doctor.consultationFees;
@@ -165,7 +165,7 @@ router.post("/paytabs/callback", async (req, res) => {
     await doctor.save();
     await patient.save();
 
-    res.status(200).send("Payment confirmed and consultation updated");
+    res.status(200).json({message:"Payment confirmed and consultation updated"});
   } catch (error) {
     console.error("Callback error:", error.message);
     res.status(500).send("Internal Server Error");
