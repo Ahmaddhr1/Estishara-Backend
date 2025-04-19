@@ -583,7 +583,7 @@ router.post("/trigger-forget-password", async (req, res) => {
   }
 });
 
-router.put("/forget-password", authenticateToken, async (req, res) => {
+router.put("/forget-password", async (req, res) => {
   try {
     const { id, password } = req.body;
 
@@ -599,7 +599,7 @@ router.put("/forget-password", authenticateToken, async (req, res) => {
         .status(200)
         .json({ message: "Patient password updated successfully" });
     }
-    
+
     user = await Doctor.findById(id);
     if (user) {
       user.password = hashedPassword;
