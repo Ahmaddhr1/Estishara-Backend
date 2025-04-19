@@ -585,12 +585,12 @@ router.post("/trigger-forget-password", async (req, res) => {
 
 router.put("/forget-password", async (req, res) => {
   try {
-    const { id, password } = req.body;
-
+    const { email, password } = req.body;
+    let email1 =email.toLowerCase();
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Try finding the user in Patient collection
-    let user = await Patient.findById(id);
+    let user = await Patient.findOne({email:email1});
 
     if (user) {
       user.password = hashedPassword;
@@ -600,7 +600,7 @@ router.put("/forget-password", async (req, res) => {
         .json({ message: "Patient password updated successfully" });
     }
 
-    user = await Doctor.findById(id);
+    user = await Doctor.findOne({email:email1});
     if (user) {
       user.password = hashedPassword;
       await user.save();
