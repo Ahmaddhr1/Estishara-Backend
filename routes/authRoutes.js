@@ -192,7 +192,6 @@ router.post("/refresh-token", async (req, res) => {
       return res.status(400).json({ error: "Refresh token is required" });
     }
 
-    // Verify the refresh token
     jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {
         return res
@@ -203,34 +202,27 @@ router.post("/refresh-token", async (req, res) => {
       const { id, email, role } = decoded;
 
       // Fetch the user data based on the role (Doctor or Patient)
-      let user;
       if (role === "doctor") {
-        user = await Doctor.findById(id).populate("specialityId").lean();
-      } else if (role === "patient") {
-        user = await Patient.findById(id).lean();
+        let doctor = await Doctor.findById(id).populate("specialityId").lean();
+        const { accessToken, refreshToken: newRefreshToken } =
+          generateTokens(doctor);
+        delete doctor.password;
+        return res.status(200).json({
+          accessToken,
+          refreshToken: newRefreshToken,
+          doctor: { id: doctor._id, email: doctor.email, role },
+        });
+      } else {
+        let patient = await Patient.findById(id).lean();
+        const { accessToken, refreshToken: newRefreshToken } =
+          generateTokens(patient);
+        delete patient.password;
+        return res.status(200).json({
+          accessToken,
+          refreshToken: newRefreshToken,
+          patient: { id: patient._id, email: patient.email, role },
+        });
       }
-
-      if (!user) {
-        return res
-          .status(404)
-          .json({
-            error: `${role.charAt(0).toUpperCase() + role.slice(1)} not found`,
-          });
-      }
-
-      // Generate new access and refresh tokens
-      const { accessToken, refreshToken: newRefreshToken } =
-        generateTokens(user);
-
-      // Remove sensitive info before returning user data
-      delete user.password;
-
-      // Return the new tokens
-      return res.status(200).json({
-        accessToken,
-        refreshToken: newRefreshToken,
-        user: { id: user._id, email: user.email, role: user.role }, // Only essential user info
-      });
     });
   } catch (e) {
     res
