@@ -583,4 +583,37 @@ router.post("/trigger-forget-password", async (req, res) => {
   }
 });
 
+router.put("/forget-password", authenticateToken, async (req, res) => {
+  try {
+    const { id, password } = req.body;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Try finding the user in Patient collection
+    let user = await Patient.findById(id);
+
+    if (user) {
+      user.password = hashedPassword;
+      await user.save();
+      return res
+        .status(200)
+        .json({ message: "Patient password updated successfully" });
+    }
+    
+    user = await Doctor.findById(id);
+    if (user) {
+      user.password = hashedPassword;
+      await user.save();
+      return res
+        .status(200)
+        .json({ message: "Doctor password updated successfully" });
+    }
+
+    return res.status(404).json({ message: "User not found" });
+  } catch (error) {
+    console.error("Forget password error:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 module.exports = router;
