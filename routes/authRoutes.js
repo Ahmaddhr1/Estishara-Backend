@@ -182,7 +182,9 @@ router.post("/refresh-token", async (req, res) => {
   try {
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
-      return res.status(400).json({ error: "Authorization header is required" });
+      return res
+        .status(400)
+        .json({ error: "Authorization header is required" });
     }
 
     const refreshToken = authHeader.split(" ")[1];
@@ -190,49 +192,53 @@ router.post("/refresh-token", async (req, res) => {
       return res.status(400).json({ error: "Refresh token is required" });
     }
 
-    // Verify the refresh token and ensure id is included
+    // Verify the refresh token
     jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {
-        return res.status(401).json({ error: "Invalid or expired refresh token" });
+        return res
+          .status(401)
+          .json({ error: "Invalid or expired refresh token" });
       }
 
-      const { id, email, role } = decoded; // Ensure we get id here
+      const { id, email, role } = decoded;
 
-      // Generate new tokens (ensure that id is passed in the payload)
-      const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded);
-
+      // Fetch the user data based on the role (Doctor or Patient)
+      let user;
       if (role === "doctor") {
-        const doctor = await Doctor.findOne({ email }).populate("specialityId").lean();
-        if (!doctor) return res.status(404).json({ error: "Doctor not found" });
-
-        delete doctor.password;  // Remove password from the response
-        return res.status(200).json({
-          accessToken,
-          refreshToken: newRefreshToken,
-          doctor,
-          role,
-          id,  // Include the id here in the response
-        });
+        user = await Doctor.findById(id).populate("specialityId").lean();
       } else if (role === "patient") {
-        const patient = await Patient.findOne({ email }).lean();
-        if (!patient) return res.status(404).json({ error: "Patient not found" });
-
-        delete patient.password;  // Remove password from the response
-        return res.status(200).json({
-          accessToken,
-          refreshToken: newRefreshToken,
-          patient,
-          role,
-          id,  // Include the id here in the response
-        });
-      } else {
-        return res.status(400).json({ error: "Unknown user role" });
+        user = await Patient.findById(id).lean();
       }
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({
+            error: `${role.charAt(0).toUpperCase() + role.slice(1)} not found`,
+          });
+      }
+
+      // Generate new access and refresh tokens
+      const { accessToken, refreshToken: newRefreshToken } =
+        generateTokens(user);
+
+      // Remove sensitive info before returning user data
+      delete user.password;
+
+      // Return the new tokens
+      return res.status(200).json({
+        accessToken,
+        refreshToken: newRefreshToken,
+        user: { id: user._id, email: user.email, role: user.role }, // Only essential user info
+      });
     });
   } catch (e) {
-    res.status(500).json({ error: e.message || "Unexpected error during refresh" });
+    res
+      .status(500)
+      .json({ error: e.message || "Unexpected error during refresh" });
   }
 });
+
 router.post("/patient/register", async (req, res) => {
   try {
     const {
@@ -442,30 +448,33 @@ router.post("/verify-token", async (req, res) => {
       return res.status(400).json({ error: "Token is required" });
     }
 
+    // Verify the access token
     jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-      if (err)
+      if (err) {
         return res.status(401).json({ error: "Invalid or expired token" });
+      }
 
-      const { id, email, role } = decoded;  // Extract id from the decoded token
+      const { id, email, role } = decoded;
 
-      // Ensure the ID in the token matches the one in the database
+      // Fetch the user data based on the role (Doctor or Patient)
       let user;
       if (role === "doctor") {
-        user = await Doctor.findById(id).lean();  // Use id for doctor lookup
+        user = await Doctor.findById(id).lean();
       } else if (role === "patient") {
-        user = await Patient.findById(id).lean();  // Use id for patient lookup
+        user = await Patient.findById(id).lean();
       }
 
       if (!user) {
         return res.status(404).json({ error: "User not found or ID mismatch" });
       }
 
-      delete user.password;  // Remove sensitive info like password
+      // Remove sensitive data before returning the user
+      delete user.password;
 
+      // Return success response with user data (excluding sensitive info)
       return res.status(200).json({
         message: "Token is valid",
-        user,
-        role,
+        user: { id: user._id, email: user.email, role: user.role }, // Essential data
       });
     });
   } catch (e) {
