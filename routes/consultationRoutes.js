@@ -73,7 +73,7 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
       cart_amount: amount,
       cart_description: `Consultation with Dr. ${doctor.name} ${doctor.lastName}`,
       callback: "https://estishara-backend.vercel.app/api/consultation/paytabs/callback",
-      return: "https://estishara-backend.vercel.app/payment-success",
+      return: "https://estishara-backend.vercel.app/",
       customer_details: {
         name: `${patient.name} ${patient.lastName}`,
         email: patient.email,
@@ -117,6 +117,7 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
 // Payment callback (PayTabs server-to-server)
 router.post("/paytabs/callback", async (req, res) => {
   try {
+    console.log('Received callback:', req.body);
     const { cart_id, tran_ref, payment_result } = req.body;
     const consultationId = cart_id.split("_")[1];
 
