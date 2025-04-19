@@ -549,7 +549,7 @@ router.post("/trigger-forget-password", async (req, res) => {
       htmlContent: `
     <p style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">Click the link below to reset your password:</p>
     <br/>
-    <a href="www.example.com" style="font-family: Arial, sans-serif; font-size: 16px; color: #007bff; text-decoration: none; font-weight: bold;">Reset Your Password</a>
+    <a href="https://estishara.com/resetpassword" style="font-family: Arial, sans-serif; font-size: 16px; color: #007bff; text-decoration: none; font-weight: bold;">Reset Your Password</a>
     <br/><br/>
     <p style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">If you didn't request to change your account password, just ignore this email. Maybe someone entered your email by mistake.</p>
     <br/>
@@ -588,8 +588,6 @@ router.put("/forget-password", async (req, res) => {
     const { email, password } = req.body;
     let email1 =email.toLowerCase();
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Try finding the user in Patient collection
     let user = await Patient.findOne({email:email1});
 
     if (user) {
