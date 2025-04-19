@@ -1,19 +1,17 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const axios = require("axios");
 const Consultation = require("../models/Consultation");
 const Patient = require("../models/Patient");
 const Doctor = require("../models/Doctor");
 const authenticateToken = require("../utils/middleware");
-const PayTabs = require('paytabs_pt2');
-dotenv.config();
 
 const router = express.Router();
+dotenv.config();
 
-
-const profileID = process.env.PAYTABS_ID; 
+const profileID = process.env.PAYTABS_ID;
 const serverKey = process.env.PAYTABS_KEY;
 const region = "GLOBAL";
-PayTabs.setConfig(profileID, serverKey, region);
 
 // Create consultation
 router.post("/request", async (req, res) => {
@@ -47,98 +45,29 @@ router.post("/request", async (req, res) => {
   }
 });
 
-// Accept consultation (doctor confirms, waiting for payment)
-router.put("/accept/:consultationId", async (req, res) => {
-  try {
-    const { consultationId } = req.params;
-
-    const consultation = await Consultation.findById(consultationId);
-    if (!consultation) {
-      return res.status(404).json({ message: "Consultation not found" });
-    }
-
-    consultation.status = "accepted";
-    await consultation.save();
-
-    res.status(200).json({
-      message: "Consultation accepted. Waiting for patient payment.",
-      consultation,
-    });
-  } catch (error) {
-    console.error("Error in /accept:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
-
-// Finalize payment (confirmed by doctor)
-router.put("/paid/:consultationId", async (req, res) => {
-  try {
-    const { consultationId } = req.params;
-    const doctorId = req.user.id;
-
-    const consultation = await Consultation.findById(consultationId);
-    if (!consultation) {
-      return res.status(404).json({ message: "Consultation not found" });
-    }
-
-    const doctor = await Doctor.findById(consultation.doctorId);
-    const patient = await Patient.findById(consultation.patientId);
-
-    if (!doctor || !patient) {
-      return res.status(404).json({ message: "Doctor or patient not found" });
-    }
-
-    const currentRespondTime = doctor.respondTime;
-    consultation.respondTime = currentRespondTime;
-    consultation.status = "paid";
-
-    doctor.respondTime = currentRespondTime + 1;
-
-    doctor.acceptedConsultations.push(consultation._id);
-    doctor.pendingConsultations = doctor.pendingConsultations.filter(
-      (id) => id.toString() !== consultation._id.toString()
-    );
-
-    patient.requestedConsultations = patient.requestedConsultations.filter(
-      (id) => id.toString() !== consultation._id.toString()
-    );
-
-    patient.historyConsultations.push(consultation._id);
-
-    await consultation.save();
-    await doctor.save();
-    await patient.save();
-
-    res.status(200).json({
-      message: "Consultation paid and updated",
-      consultation,
-      updatedDoctorRespondTime: doctor.respondTime,
-    });
-  } catch (error) {
-    console.error("Error in /paid:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
-
 // Create payment link (PayTabs)
 router.post("/paytabs/create/:consultationId", async (req, res) => {
   try {
     const consultation = await Consultation.findById(req.params.consultationId)
-      .populate("doctorId")
-      .populate("patientId");
+      .populate({
+        path: "doctorId",
+        select: "name lastName consultationFees",
+      })
+      .populate({
+        path: "patientId",
+        select: "name lastName email phoneNumber",
+      });
 
     if (!consultation) {
-      return res
-        .status(404)
-        .json({ message: "Consultation, doctor, or patient not found" });
+      return res.status(404).json({ message: "Consultation, doctor, or patient not found" });
     }
 
     const doctor = consultation.doctorId;
     const amount = doctor.consultationFees;
-
     const patient = consultation.patientId;
 
     const paymentRequest = {
+      profile_id: profileID,
       tran_type: "sale",
       tran_class: "ecom",
       cart_id: `cons_${consultation._id}`,
@@ -167,10 +96,19 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
       hide_billing: true,
     };
 
-    // Use PayTabs to create the payment link
-    const response = await PayTabs.createPayment(paymentRequest);
-    const paymentUrl = response.redirect_url;
+    // Make the PayTabs API request to create the payment link
+    const response = await axios.post(
+      "https://secure-global.paytabs.com/payment/request",
+      paymentRequest,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${serverKey}`,
+        },
+      }
+    );
 
+    const paymentUrl = response.data.redirect_url;
     res.json({ payment_url: paymentUrl });
   } catch (err) {
     console.error("PayTabs error:", err.response ? err.response.data : err.message);
