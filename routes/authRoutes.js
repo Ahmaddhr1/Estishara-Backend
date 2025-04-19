@@ -211,7 +211,7 @@ router.post("/refresh-token", async (req, res) => {
           accessToken,
           refreshToken: newRefreshToken,
           doctor,
-          role
+          role,
         });
       } else {
         let patient = await Patient.findById(id).lean();
@@ -222,7 +222,7 @@ router.post("/refresh-token", async (req, res) => {
           accessToken,
           refreshToken: newRefreshToken,
           patient,
-          role
+          role,
         });
       }
     });
@@ -520,4 +520,67 @@ router.put("/forget-password-k", authenticateToken, async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+router.post("/trigger-forget-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    let email1 = email.toLowerCase();
+    let user = await Patient.findOne({ email: email1 }).exec();
+
+    if (!user) {
+      user = await Doctor.findOne({ email: email1 }).exec();
+    }
+
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+    const apikey = process.env.BREVO_MAIL;
+    const url = process.env.BREVO_URL;
+
+    const emailData = {
+      sender: { name: "Estishara", email: "ka530893@gmail.com" },
+      to: [{ email: email1 }],
+      subject: "Reset Your Password",
+      htmlContent: `
+    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">Click the link below to reset your password:</p>
+    <br/>
+    <a href="www.example.com" style="font-family: Arial, sans-serif; font-size: 16px; color: #007bff; text-decoration: none; font-weight: bold;">Reset Your Password</a>
+    <br/><br/>
+    <p style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">If you didn't request to change your account password, just ignore this email. Maybe someone entered your email by mistake.</p>
+    <br/>
+    <h3 style="font-family: Arial, sans-serif; font-size: 18px;">Stay safe out there!</h3>
+    <h2 style="font-family: Arial, sans-serif; font-size: 22px;">Estishara Team</h2>
+  `,
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": apikey,
+      },
+      body: JSON.stringify(emailData),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      console.log("Email sent successfully:", data);
+      return res.json({ message: "Email sent successfully" });
+    } else {
+      console.error("Failed to send email:", data);
+      return res.status(500).json({ error: "Failed to send email" });
+    }
+  } catch (err) {
+    console.error("Error in forget-password route:", err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while processing your request" });
+  }
+});
+
 module.exports = router;
