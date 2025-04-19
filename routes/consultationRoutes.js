@@ -164,6 +164,15 @@ router.post("/paytabs/callback", async (req, res) => {
     await consultation.save();
     await doctor.save();
     await patient.save();
+    
+    const notification = new Notification({
+      title:"Payment Sucessful",
+      content:`Mr.${patient.name} ${patient.lastName} has paid for your consultation.Please start it now!`,
+      receiverModel:'Doctor',
+      receiver:doctor._id,
+    });
+
+    await notification.save();
 
     res.status(200).json({message:"Payment confirmed and consultation updated"});
   } catch (error) {
