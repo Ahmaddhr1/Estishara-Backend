@@ -5,13 +5,11 @@ const Consultation = require("../models/Consultation");
 const Patient = require("../models/Patient");
 const Doctor = require("../models/Doctor");
 const authenticateToken = require("../utils/middleware");
-
 const router = express.Router();
 dotenv.config();
 
 const profileID = process.env.PAYTABS_ID;
 const serverKey = process.env.PAYTABS_KEY;
-const region = "GLOBAL";
 
 // Create consultation
 router.post("/request", async (req, res) => {
@@ -45,7 +43,7 @@ router.post("/request", async (req, res) => {
   }
 });
 
-// Create payment link (PayTabs)
+
 router.post("/paytabs/create/:consultationId", async (req, res) => {
   try {
     const consultation = await Consultation.findById(req.params.consultationId)
