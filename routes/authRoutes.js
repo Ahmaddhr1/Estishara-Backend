@@ -199,7 +199,7 @@ router.post("/refresh-token", async (req, res) => {
           .json({ error: "Invalid or expired refresh token" });
       }
 
-      const { id, email, role } = decoded;
+      const { id, role } = decoded;
 
       // Fetch the user data based on the role (Doctor or Patient)
       if (role === "doctor") {
@@ -210,7 +210,8 @@ router.post("/refresh-token", async (req, res) => {
         return res.status(200).json({
           accessToken,
           refreshToken: newRefreshToken,
-          doctor: { id: doctor._id, email: doctor.email, role },
+          doctor,
+          role
         });
       } else {
         let patient = await Patient.findById(id).lean();
@@ -220,7 +221,8 @@ router.post("/refresh-token", async (req, res) => {
         return res.status(200).json({
           accessToken,
           refreshToken: newRefreshToken,
-          patient: { id: patient._id, email: patient.email, role },
+          patient,
+          role
         });
       }
     });
