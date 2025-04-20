@@ -43,7 +43,7 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
       if (maxFee) query.consultationFee.$lte = parseFloat(maxFee);
     }
 
-    const doctors = await Doctor.find(query).populate("specialityId");
+    const doctors = await Doctor.find(query).populate("specialityId","title");
 
     const total = await Doctor.countDocuments(query);
 
@@ -84,7 +84,7 @@ router.get("/search", authenticateToken, async (req, res) => {
       isPendingDoctor: false,
     };
     const doctors = await Doctor.find(query)
-      .populate("specialityId")
+      .populate("specialityId","title")
 
     const total = await Doctor.countDocuments(query);
 
