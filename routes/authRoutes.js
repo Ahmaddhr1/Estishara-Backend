@@ -541,7 +541,7 @@ router.post("/trigger-forget-password", async (req, res) => {
 
     const apikey = process.env.BREVO_MAIL;
     const url = process.env.BREVO_URL;
-
+    const resetLink = `https://estishara.com/resetpassword?email=${encodeURIComponent(email1)}`;
     const emailData = {
       sender: { name: "Estishara", email: "ka530893@gmail.com" },
       to: [{ email: email1 }],
@@ -549,7 +549,7 @@ router.post("/trigger-forget-password", async (req, res) => {
       htmlContent: `
     <p style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">Click the link below to reset your password:</p>
     <br/>
-    <a href="https://estishara.com/resetpassword" style="font-family: Arial, sans-serif; font-size: 16px; color: #007bff; text-decoration: none; font-weight: bold;">Reset Your Password</a>
+    <a href="${resetLink}" style="font-family: Arial, sans-serif; font-size: 16px; color: #007bff; text-decoration: none; font-weight: bold;">Reset Your Password</a>
     <br/><br/>
     <p style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">If you didn't request to change your account password, just ignore this email. Maybe someone entered your email by mistake.</p>
     <br/>
