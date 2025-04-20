@@ -5,11 +5,9 @@ const Speciality = require("../models/Speciality");
 const Patient = require("../models/Patient");
 const authenticateToken = require("../utils/middleware");
 const mongoose = require("mongoose");
-const {sanitizeDoctor,sanitizeDoctors} = require("../utils/sanitize");
-
+const { sanitizeDoctor, sanitizeDoctors } = require("../utils/sanitize");
 
 // Utility to remove password from doctor object
-
 
 router.get("/", async (req, res) => {
   try {
@@ -33,14 +31,7 @@ router.get("/", async (req, res) => {
 
 router.get("/search-filter", authenticateToken, async (req, res) => {
   try {
-    const {
-      responseTime,
-      specialityId,
-      minFee,
-      maxFee,
-      page = 1,
-      limit = 10,
-    } = req.query;
+    const { responseTime, specialityId, minFee, maxFee } = req.query;
 
     const query = { isPendingDoctor: false };
 
@@ -52,23 +43,15 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
       if (maxFee) query.consultationFee.$lte = parseFloat(maxFee);
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    const doctors = await Doctor.find(query)
-      .populate("specialityId")
-      .skip(skip)
-      .limit(parseInt(limit));
+    const doctors = await Doctor.find(query).populate("specialityId");
 
     const total = await Doctor.countDocuments(query);
 
     if (!doctors.length) {
       return res.status(404).json({ message: "No doctors matched the filter" });
     }
-
     res.json({
       total,
-      currentPage: parseInt(page),
-      totalPages: Math.ceil(total / limit),
       doctors: sanitizeDoctors(doctors),
     });
   } catch (err) {
@@ -90,32 +73,23 @@ router.get("/pending", async (req, res) => {
 
 router.get("/search", authenticateToken, async (req, res) => {
   try {
-    const { name, page = 1, limit = 10 } = req.query;
-
+    const { name } = req.query;
     if (!name || name.trim() === "") {
       return res
         .status(400)
         .json({ message: "Name is required for basic search" });
     }
-
     const query = {
       name: { $regex: name, $options: "i" },
       isPendingDoctor: false,
     };
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
     const doctors = await Doctor.find(query)
       .populate("specialityId")
-      .skip(skip)
-      .limit(parseInt(limit));
 
     const total = await Doctor.countDocuments(query);
 
     res.json({
       total,
-      currentPage: parseInt(page),
-      totalPages: Math.ceil(total / limit),
       doctors: sanitizeDoctors(doctors),
     });
   } catch (err) {
@@ -131,7 +105,7 @@ router.get("/topten", async (req, res) => {
       { $addFields: { nbRecommendations: { $size: "$recommendedBy" } } },
       { $sort: { nbRecommendations: -1 } },
       { $limit: 10 },
-      { $project: { password: 0 } } 
+      { $project: { password: 0 } },
     ]);
 
     const populatedDoctors = await Doctor.populate(doctors, {
@@ -139,7 +113,7 @@ router.get("/topten", async (req, res) => {
       select: "title",
     });
 
-    res.status(200).json( populatedDoctors );
+    res.status(200).json(populatedDoctors);
   } catch (error) {
     console.error("Error fetching top doctors:", error);
     return res.status(500).json({ message: error.message });
