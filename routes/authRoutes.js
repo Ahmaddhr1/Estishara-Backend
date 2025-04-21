@@ -454,22 +454,27 @@ router.post("/verify-token", async (req, res) => {
       let user;
       if (role === "doctor") {
         user = await Doctor.findById(id).lean();
+        delete user.password;
+        return res.status(200).json({
+          message: "Token is valid",
+          doctor: user,
+          role,
+        });
       } else if (role === "patient") {
         user = await Patient.findById(id).lean();
+        delete user.password;
+        return res.status(200).json({
+          message: "Token is valid",
+          patient: user,
+          role,
+        });
+      } else {
+        if (!user) {
+          return res
+            .status(404)
+            .json({ error: "User not found or ID mismatch" });
+        }
       }
-
-      if (!user) {
-        return res.status(404).json({ error: "User not found or ID mismatch" });
-      }
-
-      // Remove sensitive data before returning the user
-      delete user.password;
-
-      // Return success response with user data (excluding sensitive info)
-      return res.status(200).json({
-        message: "Token is valid",
-        user: { id: user._id, email: user.email, role: user.role }, // Essential data
-      });
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -541,7 +546,9 @@ router.post("/trigger-forget-password", async (req, res) => {
 
     const apikey = process.env.BREVO_MAIL;
     const url = process.env.BREVO_URL;
-    const resetLink = `https://estishara.com/resetpassword?email=${encodeURIComponent(email1)}`;
+    const resetLink = `https://estishara.com/resetpassword?email=${encodeURIComponent(
+      email1
+    )}`;
     const emailData = {
       sender: { name: "Estishara", email: "ka530893@gmail.com" },
       to: [{ email: email1 }],
@@ -586,9 +593,9 @@ router.post("/trigger-forget-password", async (req, res) => {
 router.put("/forget-password", async (req, res) => {
   try {
     const { email, password } = req.body;
-    let email1 =email.toLowerCase();
+    let email1 = email.toLowerCase();
     const hashedPassword = await bcrypt.hash(password, 10);
-    let user = await Patient.findOne({email:email1});
+    let user = await Patient.findOne({ email: email1 });
 
     if (user) {
       user.password = hashedPassword;
@@ -598,7 +605,7 @@ router.put("/forget-password", async (req, res) => {
         .json({ message: "Patient password updated successfully" });
     }
 
-    user = await Doctor.findOne({email:email1});
+    user = await Doctor.findOne({ email: email1 });
     if (user) {
       user.password = hashedPassword;
       await user.save();
