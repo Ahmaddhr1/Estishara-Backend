@@ -117,7 +117,16 @@ const doctorSchema = new Schema(
       ref: "Consultation",
       default: [],
     },
+    specialityDetails: {
+      type: string,
+      default: "",
+    },
+    languageSpeak: {
+      type: [string],
+      default: [],
+    },
   },
+
   { timestamps: true }
 );
 
