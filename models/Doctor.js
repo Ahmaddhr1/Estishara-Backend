@@ -118,11 +118,11 @@ const doctorSchema = new Schema(
       default: [],
     },
     specialityDetails: {
-      type: string,
+      type: String,
       default: "",
     },
     languageSpeak: {
-      type: [string],
+      type: [String],
       default: [],
     },
   },
