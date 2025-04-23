@@ -319,9 +319,9 @@ router.post("/login", async (req, res) => {
 
     if (!user) {
       // If not found, try doctor
-      user = await Doctor.findOne({ email: emailNormalized })
-        .exec()
-        .populate("specialityId");
+      user = await Doctor.findOne({ email: emailNormalized }).populate(
+        "specialityId"
+      );
       role = "doctor";
     }
 
