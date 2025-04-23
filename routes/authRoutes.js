@@ -319,7 +319,9 @@ router.post("/login", async (req, res) => {
 
     if (!user) {
       // If not found, try doctor
-      user = await Doctor.findOne({ email: emailNormalized }).exec();
+      user = await Doctor.findOne({ email: emailNormalized })
+        .exec()
+        .populate("specialityId");
       role = "doctor";
     }
 
@@ -453,8 +455,7 @@ router.post("/verify-token", async (req, res) => {
       // Fetch the user data based on the role (Doctor or Patient)
       let user;
       if (role === "doctor") {
-        user = await Doctor.findById(id).lean();
-        delete user.password;
+        user = await Doctor.findById(id).lean().populate("specialityId");
         return res.status(200).json({
           message: "Token is valid",
           doctor: user,
