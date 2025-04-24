@@ -43,7 +43,7 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
       if (maxFee) query.consultationFee.$lte = parseFloat(maxFee);
     }
 
-    const doctors = await Doctor.find(query).populate("specialityId","title");
+    const doctors = await Doctor.find(query).populate("specialityId", "title");
 
     const total = await Doctor.countDocuments(query);
 
@@ -83,8 +83,7 @@ router.get("/search", authenticateToken, async (req, res) => {
       name: { $regex: name, $options: "i" },
       isPendingDoctor: false,
     };
-    const doctors = await Doctor.find(query)
-      .populate("specialityId","title")
+    const doctors = await Doctor.find(query).populate("specialityId", "title");
 
     const total = await Doctor.countDocuments(query);
 
@@ -278,7 +277,7 @@ router.post("/addrecommendation/:id", authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/getrc/:id", async (req, res) => {
+router.get("/getpc/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const doctor = await Doctor.findById(id).populate({
@@ -299,6 +298,32 @@ router.get("/getrc/:id", async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching consultations for the doctor." });
+  }
+});
+
+router.get("/getac/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doctor = await Doctor.findById(id).populate({
+      path: "acceptedConsultations",
+      populate: {
+        path: "patientId",
+        select: "name lastName profilePic email",
+      },
+    });
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found!" });
+    }
+
+    res.status(200).json({ doctor: sanitizeDoctor(doctor) });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({
+        message: "Error fetching accepted consultations for the doctor.",
+      });
   }
 });
 

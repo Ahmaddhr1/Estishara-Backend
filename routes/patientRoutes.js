@@ -55,18 +55,22 @@ router.get("/:id", async (req, res) => {
 });
 
 // PUT (update) patient profile
-router.put('/:id', authenticateToken , async (req, res) => {
+router.put("/:id", authenticateToken, async (req, res) => {
   try {
     const requestingUserId = req.user.id;
     const requestingUserRole = req.user.role;
 
-    if (requestingUserRole !== 'admin' && requestingUserId !== req.params.id) {
-      return res.status(403).json({ error: "Forbidden: You can only update your own profile" });
+    if (requestingUserRole !== "admin" && requestingUserId !== req.params.id) {
+      return res
+        .status(403)
+        .json({ error: "Forbidden: You can only update your own profile" });
     }
 
-    await Patient.findByIdAndUpdate(req.params.id, req.body.patient, { new: true });
+    await Patient.findByIdAndUpdate(req.params.id, req.body.patient, {
+      new: true,
+    });
 
-    const updatedPatient = await Patient.findById(req.params.id); 
+    const updatedPatient = await Patient.findById(req.params.id);
     if (!updatedPatient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -76,8 +80,6 @@ router.put('/:id', authenticateToken , async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-
 
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
@@ -123,6 +125,32 @@ router.get("/getrc/:id", async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching consultations for the patient." });
+  }
+});
+
+router.get("/gethc/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patient = await Patient.findById(id).populate({
+      path: "historyConsultations",
+      populate: {
+        path: "doctorId",
+        select: "name lastName profilePic email",
+      },
+    });
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found!" });
+    }
+
+    res.status(200).json({ patient: sanitizePatient(patient) });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({
+        message: "Error fetching history consultations for the patient.",
+      });
   }
 });
 
