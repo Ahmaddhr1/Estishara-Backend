@@ -206,7 +206,12 @@ router.post("/refresh-token", async (req, res) => {
 
       // Fetch the user data based on the role (Doctor or Patient)
       if (role === "doctor") {
-        let doctor = await Doctor.findById(id).populate("specialityId").lean();
+        let doctor = await Doctor.findById(id)
+          .populate("specialityId")
+          .populate({
+            path: "pendingConsultations",
+            select: "status",
+          });
         const { accessToken, refreshToken: newRefreshToken } =
           generateTokens(doctor);
         delete doctor.password;
@@ -461,7 +466,12 @@ router.post("/verify-token", async (req, res) => {
       // Fetch the user data based on the role (Doctor or Patient)
       let user;
       if (role === "doctor") {
-        user = await Doctor.findById(id).lean().populate("specialityId");
+        user = await Doctor.findById(id)
+          .populate("specialityId")
+          .populate({
+            path: "pendingConsultations",
+            select: "status",
+          });
         return res.status(200).json({
           message: "Token is valid",
           doctor: user,

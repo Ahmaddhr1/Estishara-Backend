@@ -13,6 +13,10 @@ router.get("/", async (req, res) => {
   try {
     const doctors = await Doctor.find({ isPendingDoctor: false })
       .populate("specialityId")
+      .populate({
+        path: "pendingConsultations",
+        select: "status",
+      })
       .exec();
 
     if (!doctors || doctors.length === 0) {
@@ -43,7 +47,12 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
       if (maxFee) query.consultationFee.$lte = parseFloat(maxFee);
     }
 
-    const doctors = await Doctor.find(query).populate("specialityId", "title");
+    const doctors = await Doctor.find(query)
+      .populate("specialityId", "title")
+      .populate({
+        path: "pendingConsultations",
+        select: "status",
+      });
 
     const total = await Doctor.countDocuments(query);
 
@@ -61,10 +70,12 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
 
 router.get("/pending", async (req, res) => {
   try {
-    const doctors = await Doctor.find({ isPendingDoctor: true }).populate(
-      "specialityId",
-      "title"
-    );
+    const doctors = await Doctor.find({ isPendingDoctor: true })
+      .populate("specialityId", "title")
+      .populate({
+        path: "pendingConsultations",
+        select: "status",
+      });
     res.status(200).json(sanitizeDoctors(doctors));
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -83,7 +94,12 @@ router.get("/search", authenticateToken, async (req, res) => {
       name: { $regex: name, $options: "i" },
       isPendingDoctor: false,
     };
-    const doctors = await Doctor.find(query).populate("specialityId", "title");
+    const doctors = await Doctor.find(query)
+      .populate("specialityId", "title")
+      .populate({
+        path: "pendingConsultations",
+        select: "status",
+      });
 
     const total = await Doctor.countDocuments(query);
 
@@ -110,6 +126,9 @@ router.get("/topten", async (req, res) => {
     const populatedDoctors = await Doctor.populate(doctors, {
       path: "specialityId",
       select: "title",
+    }).populate({
+      path: "pendingConsultations",
+      select: "status",
     });
 
     res.status(200).json(populatedDoctors);
@@ -121,9 +140,12 @@ router.get("/topten", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const doctor = await Doctor.findById(req.params.id).populate(
-      "specialityId"
-    );
+    const doctor = await Doctor.findById(req.params.id)
+      .populate("specialityId")
+      .populate({
+        path: "pendingConsultations",
+        select: "status",
+      });
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
@@ -153,7 +175,10 @@ router.put("/:id", authenticateToken, async (req, res) => {
     );
 
     const savedDoctor = await doctor.save();
-    await savedDoctor.populate("specialityId", "title");
+    await savedDoctor.populate("specialityId", "title").populate({
+      path: "pendingConsultations",
+      select: "status",
+    });
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
@@ -283,13 +308,15 @@ router.post("/addrecommendation/:id", authenticateToken, async (req, res) => {
 router.get("/getpc/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const doctor = await Doctor.findById(id).populate({
-      path: "pendingConsultations",
-      populate: {
-        path: "patientId",
-        select: "name lastName profilePic email",
-      },
-    });
+    const doctor = await Doctor.findById(id)
+      .populate({
+        path: "pendingConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate("specialityId", "title");
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found!" });
@@ -307,13 +334,15 @@ router.get("/getpc/:id", async (req, res) => {
 router.get("/getac/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const doctor = await Doctor.findById(id).populate({
-      path: "acceptedConsultations",
-      populate: {
-        path: "patientId",
-        select: "name lastName profilePic email",
-      },
-    });
+    const doctor = await Doctor.findById(id)
+      .populate({
+        path: "acceptedConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate("specialityId", "title");
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found!" });
