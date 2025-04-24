@@ -321,7 +321,10 @@ router.post("/login", async (req, res) => {
       // If not found, try doctor
       user = await Doctor.findOne({ email: emailNormalized }).populate(
         "specialityId"
-      );
+      ).populate({
+        path:"pendingConsultations",
+        select:"status"
+      });
       role = "doctor";
     }
 
