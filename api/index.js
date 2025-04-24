@@ -10,6 +10,7 @@ const bannerRoutes = require("../routes/bannerRoutes.js");
 const consultationRoutes = require("../routes/consultationRoutes.js")
 const dashboardRoutes = require("../routes/dashboardRoutes.js");
 const notificationRoutes =require("../routes/notificationRoutes.js")
+const aiRoutes = require("../routes/adminRoutes.js");
 const connectDB = require("../config/database.js");
 
 try {
@@ -29,6 +30,7 @@ app.use("/api/banner", bannerRoutes);
 app.use("/api/consultation",consultationRoutes)
 app.use("/api/dashboard",dashboardRoutes);
 app.use("/api/notification",notificationRoutes)
+app.use("/api/ai",aiRoutes)
 
 
 app.get("/", (req, res) => {
