@@ -146,11 +146,25 @@ router.get("/gethc/:id", async (req, res) => {
     res.status(200).json({ patient: sanitizePatient(patient) });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Error fetching history consultations for the patient.",
-      });
+    res.status(500).json({
+      message: "Error fetching history consultations for the patient.",
+    });
+  }
+});
+
+router.get("/recommended/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patient = await Patient.findById(id).populate({
+      path: "recommendedDoctors",
+      select: "name lastName email",
+    });
+    if (!patient) {
+      res.status(404).json({ error: "Patient not found!!" });
+    }
+    res.status(200).json({ patient: sanitizePatient(patient) });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Error occured" });
   }
 });
 
