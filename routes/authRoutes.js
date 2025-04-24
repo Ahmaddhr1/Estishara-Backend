@@ -148,7 +148,10 @@ router.post("/doctor/register", async (req, res) => {
     });
 
     const savedDoctor = await newDoctor.save();
-    await savedDoctor.populate("specialityId", "title");
+    await savedDoctor.populate("specialityId", "title").populate({
+      path: "pendingConsultations",
+      select: "status",
+    });
 
     const speciality = await Speciality.findById(specialityId);
     if (!speciality) {
@@ -319,12 +322,12 @@ router.post("/login", async (req, res) => {
 
     if (!user) {
       // If not found, try doctor
-      user = await Doctor.findOne({ email: emailNormalized }).populate(
-        "specialityId"
-      ).populate({
-        path:"pendingConsultations",
-        select:"status"
-      });
+      user = await Doctor.findOne({ email: emailNormalized })
+        .populate("specialityId")
+        .populate({
+          path: "pendingConsultations",
+          select: "status",
+        });
       role = "doctor";
     }
 
