@@ -30,7 +30,15 @@ router.get("/", authenticateToken, async (req, res) => {
       query[key] = { $regex: new RegExp(req.query[key], "i") };
     }
 
-    const patients = await Patient.find(query);
+    const patients = await Patient.find(query)
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "historyConsultations",
+        select: "status",
+      });
 
     if (!patients.length) {
       return res.status(404).json({ message: "Patients not found" });
@@ -45,7 +53,15 @@ router.get("/", authenticateToken, async (req, res) => {
 // GET single patient by ID
 router.get("/:id", async (req, res) => {
   try {
-    const patient = await Patient.findById(req.params.id);
+    const patient = await Patient.findById(req.params.id)
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "historyConsultations",
+        select: "status",
+      });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -71,7 +87,15 @@ router.put("/:id", authenticateToken, async (req, res) => {
       new: true,
     });
 
-    const updatedPatient = await Patient.findById(req.params.id);
+    const updatedPatient = await Patient.findById(req.params.id)
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "historyConsultations",
+        select: "status",
+      });
     if (!updatedPatient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -115,13 +139,18 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 router.get("/getrc/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const patient = await Patient.findById(id).populate({
-      path: "requestedConsultations",
-      populate: {
-        path: "doctorId",
-        select: "name lastName profilePic email",
-      },
-    });
+    const patient = await Patient.findById(id)
+      .populate({
+        path: "requestedConsultations",
+        populate: {
+          path: "doctorId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate({
+        path: "historyConsultations",
+        select: "status",
+      });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found!" });
@@ -139,13 +168,15 @@ router.get("/getrc/:id", async (req, res) => {
 router.get("/gethc/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const patient = await Patient.findById(id).populate({
-      path: "historyConsultations",
-      populate: {
-        path: "doctorId",
-        select: "name lastName profilePic email",
-      },
-    });
+    const patient = await Patient.findById(id)
+      .populate({
+        path: "historyConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found!" });
@@ -163,10 +194,19 @@ router.get("/gethc/:id", async (req, res) => {
 router.get("/recommended/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const patient = await Patient.findById(id).populate({
-      path: "recommendedDoctors",
-      select: "name lastName email",
-    });
+    const patient = await Patient.findById(id)
+      .populate({
+        path: "recommendedDoctors",
+        select: "name lastName email",
+      })
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "historyConsultations",
+        select: "status",
+      });
     if (!patient) {
       res.status(404).json({ error: "Patient not found!!" });
     }

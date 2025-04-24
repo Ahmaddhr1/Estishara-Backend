@@ -222,7 +222,15 @@ router.post("/refresh-token", async (req, res) => {
           role,
         });
       } else {
-        let patient = await Patient.findById(id).lean();
+        let patient = await Patient.findById(id)
+          .populate({
+            path: "historyConsultations",
+            select: "status",
+          })
+          .populate({
+            path: "requestedConsultations",
+            select: "status",
+          });
         const { accessToken, refreshToken: newRefreshToken } =
           generateTokens(patient);
         delete patient.password;
@@ -279,11 +287,20 @@ router.post("/patient/register", async (req, res) => {
       password: hashedPassword,
     });
 
-    await newPatient.save();
+    const p = await newPatient.save();
+    await p
+      .populate({
+        path: "historyConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      });
 
-    const { accessToken, refreshToken } = generateTokens(newPatient);
+    const { accessToken, refreshToken } = generateTokens(p);
 
-    const patientObject = newPatient.toObject();
+    const patientObject = p.toObject();
     delete patientObject.password;
 
     const role = "patient";
@@ -322,7 +339,15 @@ router.post("/login", async (req, res) => {
     }
 
     // Try to find patient first
-    let user = await Patient.findOne({ email: emailNormalized }).exec();
+    let user = await Patient.findOne({ email: emailNormalized })
+      .populate({
+        path: "historyConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      });
     let role = "patient";
 
     if (!user) {
@@ -466,19 +491,25 @@ router.post("/verify-token", async (req, res) => {
       // Fetch the user data based on the role (Doctor or Patient)
       let user;
       if (role === "doctor") {
-        user = await Doctor.findById(id)
-          .populate("specialityId")
-          .populate({
-            path: "pendingConsultations",
-            select: "status",
-          });
+        user = await Doctor.findById(id).populate("specialityId").populate({
+          path: "pendingConsultations",
+          select: "status",
+        });
         return res.status(200).json({
           message: "Token is valid",
           doctor: user,
           role,
         });
       } else if (role === "patient") {
-        user = await Patient.findById(id).lean();
+        user = await Patient.findById(id)
+          .populate({
+            path: "historyConsultations",
+            select: "status",
+          })
+          .populate({
+            path: "requestedConsultations",
+            select: "status",
+          });
         delete user.password;
         return res.status(200).json({
           message: "Token is valid",
