@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Patient = require("../models/Patient");
 const authenticateToken = require("../utils/middleware");
+const Doctor = require("../models/Doctor");
 // Utility functions
 function sanitizePatient(patient) {
   const pat = patient.toObject();
