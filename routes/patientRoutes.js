@@ -92,10 +92,17 @@ router.delete("/:id", authenticateToken, async (req, res) => {
       });
     }
 
-    const patient = await Patient.findByIdAndDelete(req.params.id);
+    const patient = await Patient.findById(req.params.id);
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
+
+    await Doctor.updateMany(
+      { recommendedBy: patient._id },
+      { $pull: { recommendedBy: patient._id } }
+    );
+
+    await Patient.findByIdAndDelete(req.params.id);
 
     res.json({ message: "Patient deleted successfully" });
   } catch (err) {

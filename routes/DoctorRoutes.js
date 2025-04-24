@@ -190,7 +190,10 @@ router.delete("/:id", authenticateToken, async (req, res) => {
         $pull: { doctors: doctor._id },
       });
     }
-
+    await Patient.updateMany(
+      { recommendedDoctors: doctor._id },
+      { $pull: { recommendedDoctors: doctor._id } }
+    );
     await Doctor.findByIdAndDelete(req.params.id);
     res.json({ message: "Doctor deleted successfully" });
   } catch (err) {
@@ -319,14 +322,10 @@ router.get("/getac/:id", async (req, res) => {
     res.status(200).json({ doctor: sanitizeDoctor(doctor) });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Error fetching accepted consultations for the doctor.",
-      });
+    res.status(500).json({
+      message: "Error fetching accepted consultations for the doctor.",
+    });
   }
 });
-
-
 
 module.exports = router;
