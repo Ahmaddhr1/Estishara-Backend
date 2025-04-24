@@ -148,10 +148,16 @@ router.post("/doctor/register", async (req, res) => {
     });
 
     const savedDoctor = await newDoctor.save();
-    await savedDoctor.populate("specialityId", "title").populate({
-      path: "pendingConsultations",
-      select: "status",
-    });
+    await savedDoctor
+      .populate("specialityId", "title")
+      .populate({
+        path: "pendingConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
+        select: "status",
+      });
 
     const speciality = await Speciality.findById(specialityId);
     if (!speciality) {
@@ -210,6 +216,10 @@ router.post("/refresh-token", async (req, res) => {
           .populate("specialityId")
           .populate({
             path: "pendingConsultations",
+            select: "status",
+          })
+          .populate({
+            path: "acceptedConsultations",
             select: "status",
           });
         const { accessToken, refreshToken: newRefreshToken } =
@@ -357,6 +367,10 @@ router.post("/login", async (req, res) => {
         .populate({
           path: "pendingConsultations",
           select: "status",
+        })
+        .populate({
+          path: "acceptedConsultations",
+          select: "status",
         });
       role = "doctor";
     }
@@ -491,10 +505,16 @@ router.post("/verify-token", async (req, res) => {
       // Fetch the user data based on the role (Doctor or Patient)
       let user;
       if (role === "doctor") {
-        user = await Doctor.findById(id).populate("specialityId").populate({
-          path: "pendingConsultations",
-          select: "status",
-        });
+        user = await Doctor.findById(id)
+          .populate("specialityId")
+          .populate({
+            path: "pendingConsultations",
+            select: "status",
+          })
+          .populate({
+            path: "acceptedConsultations",
+            select: "status",
+          });
         return res.status(200).json({
           message: "Token is valid",
           doctor: user,

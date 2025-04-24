@@ -17,7 +17,10 @@ router.get("/", async (req, res) => {
         path: "pendingConsultations",
         select: "status",
       })
-      .exec();
+      .populate({
+        path: "acceptedConsultations",
+        select: "status",
+      });
 
     if (!doctors || doctors.length === 0) {
       return res.status(200).json({ message: "No doctors available" });
@@ -52,6 +55,10 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
       .populate({
         path: "pendingConsultations",
         select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
+        select: "status",
       });
 
     const total = await Doctor.countDocuments(query);
@@ -74,6 +81,10 @@ router.get("/pending", async (req, res) => {
       .populate("specialityId", "title")
       .populate({
         path: "pendingConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
         select: "status",
       });
     res.status(200).json(sanitizeDoctors(doctors));
@@ -98,6 +109,10 @@ router.get("/search", authenticateToken, async (req, res) => {
       .populate("specialityId", "title")
       .populate({
         path: "pendingConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
         select: "status",
       });
 
@@ -126,10 +141,15 @@ router.get("/topten", async (req, res) => {
     const populatedDoctors = await Doctor.populate(doctors, {
       path: "specialityId",
       select: "title",
-    }).populate({
-      path: "pendingConsultations",
-      select: "status",
-    });
+    })
+      .populate({
+        path: "pendingConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
+        select: "status",
+      });
 
     res.status(200).json(populatedDoctors);
   } catch (error) {
@@ -144,6 +164,10 @@ router.get("/:id", async (req, res) => {
       .populate("specialityId")
       .populate({
         path: "pendingConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
         select: "status",
       });
 
@@ -175,10 +199,16 @@ router.put("/:id", authenticateToken, async (req, res) => {
     );
 
     const savedDoctor = await doctor.save();
-    await savedDoctor.populate("specialityId", "title").populate({
-      path: "pendingConsultations",
-      select: "status",
-    });
+    await savedDoctor
+      .populate("specialityId", "title")
+      .populate({
+        path: "pendingConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
+        select: "status",
+      });
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
@@ -316,7 +346,11 @@ router.get("/getpc/:id", async (req, res) => {
           select: "name lastName profilePic email",
         },
       })
-      .populate("specialityId", "title");
+      .populate("specialityId", "title")
+      .populate({
+        path: "acceptedConsultations",
+        select: "status",
+      });
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found!" });
@@ -342,7 +376,11 @@ router.get("/getac/:id", async (req, res) => {
           select: "name lastName profilePic email",
         },
       })
-      .populate("specialityId", "title");
+      .populate("specialityId", "title")
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      });
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found!" });
