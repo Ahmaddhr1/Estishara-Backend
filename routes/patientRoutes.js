@@ -197,7 +197,7 @@ router.get("/recommended/:id",/*authenticateToken ,*/ async (req, res) => {
       //   });
       // }
       const { id } = req.params;
-      const patient = await patient
+      const patient = await Patient
         .findById(id)
         .populate({
           path: "recommendedDoctors",

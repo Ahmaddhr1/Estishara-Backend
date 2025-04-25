@@ -392,7 +392,7 @@ router.get("/getac/:id", async (req, res) => {
   }
 });
 
-router.put("acceptCons/:id", async (req, res) => {
+router.put("/acceptCons/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const consultation = await Consultation.findById(id);
@@ -409,7 +409,7 @@ router.put("acceptCons/:id", async (req, res) => {
   }
 });
 
-router.delete("Cons/:id", async (req, res) => {
+router.delete("/cons/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const consultation = await Consultation.findById(id).populate("doctorId").populate("patientId");
