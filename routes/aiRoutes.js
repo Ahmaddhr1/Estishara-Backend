@@ -49,7 +49,6 @@ router.post("/ask", async (req, res) => {
     const aiAnswer = aiResponse.data.choices[0].message.content;
     const specialityTitle = getSpecialityFromQuestion(question);
     if (specialityTitle) {
-      // Find doctors matching the speciality title
       const speciality = await Speciality.findOne({ title: specialityTitle });
       const recommendedDoctors = speciality
         ? await Doctor.find({ specialityId: speciality._id })

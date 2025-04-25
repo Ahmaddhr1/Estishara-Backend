@@ -142,10 +142,7 @@ router.get("/getrc/:id", async (req, res) => {
     const patient = await Patient.findById(id)
       .populate({
         path: "requestedConsultations",
-        populate: {
-          path: "doctorId",
-          select: "name lastName profilePic email",
-        },
+        select: "status",
       })
       .populate({
         path: "historyConsultations",
@@ -194,6 +191,7 @@ router.get("/gethc/:id", async (req, res) => {
 router.get("/recommended/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
     const patient = await Patient.findById(id)
       .populate({
         path: "recommendedDoctors",
@@ -211,6 +209,40 @@ router.get("/recommended/:id", async (req, res) => {
       res.status(404).json({ error: "Patient not found!!" });
     }
     res.status(200).json({ patient: sanitizePatient(patient) });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Error occured" });
+  }
+});
+
+router.get("recommendations/:id", authenticateToken, async (req, res) => {
+  try {
+    const reqUserId = req.user?.id;
+    if (reqUserId !== id) {
+      return res.status(403).json({
+        error: "Forbidden: You are not see  this detail",
+      });
+    }
+    const { id } = req.params;
+    const patient = await patient
+      .findById(id)
+      .populate({
+        path: "recommendedDoctors",
+        select: "name lastName profilePic email consultationFees",
+      })
+      .populate({
+        path: "historyConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      });
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient Not found" });
+    }
+
+    return res.status(200).json(patient);
   } catch (e) {
     res.status(500).json({ error: e.message || "Error occured" });
   }

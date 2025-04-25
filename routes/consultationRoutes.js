@@ -44,6 +44,8 @@ router.post("/request", async (req, res) => {
 });
 
 
+
+
 router.post("/paytabs/create/:consultationId", async (req, res) => {
   try {
     const consultation = await Consultation.findById(req.params.consultationId)

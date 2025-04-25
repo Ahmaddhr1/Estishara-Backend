@@ -645,7 +645,6 @@ router.put("/forget-password", async (req, res) => {
         .status(200)
         .json({ message: "Patient password updated successfully" });
     }
-
     user = await Doctor.findOne({ email: email1 });
     if (user) {
       user.password = hashedPassword;
@@ -654,7 +653,6 @@ router.put("/forget-password", async (req, res) => {
         .status(200)
         .json({ message: "Doctor password updated successfully" });
     }
-
     return res.status(404).json({ message: "User not found" });
   } catch (error) {
     console.error("Forget password error:", error.message);
