@@ -192,15 +192,19 @@ router.put("/:id", authenticateToken, async (req, res) => {
       });
     }
 
-    const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body.doctor, {
-      new: true,
-    });
+    // First update the doctor
+    const updatedDoctor = await Doctor.findByIdAndUpdate(
+      req.params.id,
+      req.body.doctor,
+      { new: true }
+    );
 
-    if (!doctor) {
+    if (!updatedDoctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    await doctor
+    // Then populate the updated doctor
+    const populatedDoctor = await Doctor.findById(updatedDoctor._id)
       .populate("specialityId", "title")
       .populate({
         path: "pendingConsultations",
@@ -212,14 +216,13 @@ router.put("/:id", authenticateToken, async (req, res) => {
       });
 
     res.json({
-      doctor: sanitizeDoctor(doctor),
+      doctor: sanitizeDoctor(populatedDoctor),
       message: "Doctor updated successfully",
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
