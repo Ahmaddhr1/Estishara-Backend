@@ -130,31 +130,27 @@ router.get("/search", authenticateToken, async (req, res) => {
 
 router.get("/topten", async (req, res) => {
   try {
-    const doctors = await Doctor.aggregate([
-      { $match: { isPendingDoctor: false } },
-      { $addFields: { nbRecommendations: { $size: "$recommendedBy" } } },
-      { $sort: { nbRecommendations: -1 } },
-      { $limit: 10 },
-      { $project: { password: 0 } },
-    ]);
-
-    const populatedDoctors = await Doctor.populate(doctors, {
-      path: "specialityId",
-      select: "title",
-    })
+    const topDoctors = await Doctor.find({ isPendingDoctor: false })
+      .select('-password') // Exclude password
+      .sort({ recommendedBy: -1 }) // Sort by array length
+      .limit(10) // Get only 10 doctors
+      .populate('specialityId', 'title') // Populate speciality name
       .populate({
-        path: "pendingConsultations",
-        select: "status",
+        path: 'pendingConsultations',
+        select: 'status'
       })
       .populate({
-        path: "acceptedConsultations",
-        select: "status",
+        path: 'acceptedConsultations', 
+        select: 'status'
       });
 
-    res.status(200).json(populatedDoctors);
+    res.status(200).json(topDoctors);
   } catch (error) {
     console.error("Error fetching top doctors:", error);
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: "Failed to fetch top doctors",
+      error: error.message 
+    });
   }
 });
 
