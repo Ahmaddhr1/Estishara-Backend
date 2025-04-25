@@ -106,19 +106,8 @@ router.post("/request-otp", async (req, res) => {
 
 router.post("/doctor/register", async (req, res) => {
   try {
-    const {
-      email,
-      password,
-      phoneNumber,
-      name,
-      lastName,
-      age,
-      documents,
-      specialityId,
-      otpToken,
-      otpCode,
-    } = req.body;
-    let email1 = email.toLowerCase();
+    const { email, password, phoneNumber, name, lastName, age, documents, specialityId, otpToken, otpCode } = req.body;
+    const email1 = email.toLowerCase();
 
     try {
       const decoded = await jwt.verify(otpToken, process.env.OTP_SECRET);
@@ -126,9 +115,7 @@ router.post("/doctor/register", async (req, res) => {
         return res.status(400).json({ error: "Invalid OTP" });
       }
       if (decoded.email !== email1) {
-        return res
-          .status(400)
-          .json({ error: "Email does not match OTP request" });
+        return res.status(400).json({ error: "Email does not match OTP request" });
       }
     } catch (err) {
       return res.status(400).json({ error: "Expired or invalid OTP" });
@@ -148,6 +135,7 @@ router.post("/doctor/register", async (req, res) => {
     });
 
     const savedDoctor = await newDoctor.save();
+
     await savedDoctor
       .populate("specialityId", "title")
       .populate({
@@ -181,9 +169,7 @@ router.post("/doctor/register", async (req, res) => {
       role,
     });
   } catch (e) {
-    res
-      .status(400)
-      .json({ error: e.message, message: "Error creating doctor!" });
+    res.status(400).json({ error: e.message, message: "Error creating doctor!" });
   }
 });
 
@@ -191,9 +177,7 @@ router.post("/refresh-token", async (req, res) => {
   try {
     const authHeader = req.headers["authorization"];
     if (!authHeader) {
-      return res
-        .status(400)
-        .json({ error: "Authorization header is required" });
+      return res.status(400).json({ error: "Authorization header is required" });
     }
 
     const refreshToken = authHeader.split(" ")[1];
@@ -203,84 +187,50 @@ router.post("/refresh-token", async (req, res) => {
 
     jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
       if (err) {
-        return res
-          .status(401)
-          .json({ error: "Invalid or expired refresh token" });
+        return res.status(401).json({ error: "Invalid or expired refresh token" });
       }
 
       const { id, role } = decoded;
 
-      // Fetch the user data based on the role (Doctor or Patient)
+      let user;
       if (role === "doctor") {
-        let doctor = await Doctor.findById(id)
+        user = await Doctor.findById(id)
           .populate("specialityId")
-          .populate({
-            path: "pendingConsultations",
-            select: "status",
-          })
-          .populate({
-            path: "acceptedConsultations",
-            select: "status",
-          });
-        const { accessToken, refreshToken: newRefreshToken } =
-          generateTokens(doctor);
-        delete doctor.password;
-        return res.status(200).json({
-          accessToken,
-          refreshToken: newRefreshToken,
-          doctor,
-          role,
-        });
+          .populate({ path: "pendingConsultations", select: "status" })
+          .populate({ path: "acceptedConsultations", select: "status" });
       } else {
-        let patient = await Patient.findById(id)
-          .populate({
-            path: "historyConsultations",
-            select: "status",
-          })
-          .populate({
-            path: "requestedConsultations",
-            select: "status",
-          });
-        const { accessToken, refreshToken: newRefreshToken } =
-          generateTokens(patient);
-        delete patient.password;
-        return res.status(200).json({
-          accessToken,
-          refreshToken: newRefreshToken,
-          patient,
-          role,
-        });
+        user = await Patient.findById(id)
+          .populate({ path: "historyConsultations", select: "status" })
+          .populate({ path: "requestedConsultations", select: "status" });
       }
+
+      const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+      delete user.password;
+
+      return res.status(200).json({
+        accessToken,
+        refreshToken: newRefreshToken,
+        user,
+        role,
+      });
     });
   } catch (e) {
-    res
-      .status(500)
-      .json({ error: e.message || "Unexpected error during refresh" });
+    res.status(500).json({ error: e.message || "Unexpected error during refresh" });
   }
 });
 
 router.post("/patient/register", async (req, res) => {
   try {
-    const {
-      name,
-      lastName,
-      email,
-      phoneNumber,
-      age,
-      password,
-      otpToken,
-      otpCode,
-    } = req.body;
-    let email1 = email.toLowerCase();
+    const { name, lastName, email, phoneNumber, age, password, otpToken, otpCode } = req.body;
+    const email1 = email.toLowerCase();
+
     try {
       const decoded = jwt.verify(otpToken, process.env.OTP_SECRET);
       if (decoded.otp !== otpCode) {
         return res.status(400).json({ error: "Invalid OTP" });
       }
       if (decoded.email !== email1) {
-        return res
-          .status(400)
-          .json({ error: "Email does not match OTP request" });
+        return res.status(400).json({ error: "Email does not match OTP request" });
       }
     } catch (err) {
       return res.status(400).json({ error: "Expired or invalid OTP" });
@@ -298,15 +248,10 @@ router.post("/patient/register", async (req, res) => {
     });
 
     const p = await newPatient.save();
+
     await p
-      .populate({
-        path: "historyConsultations",
-        select: "status",
-      })
-      .populate({
-        path: "requestedConsultations",
-        select: "status",
-      });
+      .populate({ path: "historyConsultations", select: "status" })
+      .populate({ path: "requestedConsultations", select: "status" });
 
     const { accessToken, refreshToken } = generateTokens(p);
 
@@ -323,9 +268,7 @@ router.post("/patient/register", async (req, res) => {
       role,
     });
   } catch (e) {
-    res
-      .status(400)
-      .json({ error: e.message, message: "Error registering patient!" });
+    res.status(400).json({ error: e.message, message: "Error registering patient!" });
   }
 });
 
@@ -333,45 +276,26 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Basic validation
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Email and password are required!" });
+      return res.status(400).json({ error: "Email and password are required!" });
     }
 
     const emailNormalized = email.toLowerCase().trim();
-
-    // Optional email format check
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(emailNormalized)) {
       return res.status(400).json({ error: "Invalid email format!" });
     }
 
-    // Try to find patient first
     let user = await Patient.findOne({ email: emailNormalized })
-      .populate({
-        path: "historyConsultations",
-        select: "status",
-      })
-      .populate({
-        path: "requestedConsultations",
-        select: "status",
-      });
+      .populate({ path: "historyConsultations", select: "status" })
+      .populate({ path: "requestedConsultations", select: "status" });
     let role = "patient";
 
     if (!user) {
-      // If not found, try doctor
       user = await Doctor.findOne({ email: emailNormalized })
         .populate("specialityId")
-        .populate({
-          path: "pendingConsultations",
-          select: "status",
-        })
-        .populate({
-          path: "acceptedConsultations",
-          select: "status",
-        });
+        .populate({ path: "pendingConsultations", select: "status" })
+        .populate({ path: "acceptedConsultations", select: "status" });
       role = "doctor";
     }
 
@@ -389,20 +313,9 @@ router.post("/login", async (req, res) => {
     const userObject = user.toObject();
     delete userObject.password;
 
-    // Here we send the response with the role-specific key
-    if (role === "doctor") {
-      return res.status(200).json({
-        message: "Login successful",
-        doctor: userObject, // Return doctor object
-        accessToken,
-        refreshToken,
-        role,
-      });
-    }
-
-    return res.status(200).json({
+    res.status(200).json({
       message: "Login successful",
-      patient: userObject, // Return patient object
+      [role]: userObject,
       accessToken,
       refreshToken,
       role,
