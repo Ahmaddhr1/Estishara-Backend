@@ -49,6 +49,8 @@ router.delete("/cons/:id", async (req, res) => {
     const consultation = await Consultation.findById(id)
       .populate("doctorId")
       .populate("patientId");
+
+    
     if (!consultation) {
       return res.status(404).json({ message: "Consultation not found!" });
     }

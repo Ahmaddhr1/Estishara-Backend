@@ -188,14 +188,14 @@ router.get("/gethc/:id", async (req, res) => {
   }
 });
 
-router.get("/recommended/:id",/*authenticateToken ,*/ async (req, res) => {
+router.get("/recommended/:id",authenticateToken,  async (req, res) => {
     try {
-      // const reqUserId = req.user?.id;
-      // if (reqUserId !== id) {
-      //   return res.status(403).json({
-      //     error: "Forbidden: You are not allow to see  this detail",
-      //   });
-      // }
+      const reqUserId = req.user?.id;
+      if (reqUserId !== id) {
+        return res.status(403).json({
+          error: "Forbidden: You are not allow to see  this detail",
+        });
+      }
       const { id } = req.params;
       const patient = await Patient
         .findById(id)
