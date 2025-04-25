@@ -43,8 +43,31 @@ router.post("/request", async (req, res) => {
   }
 });
 
+router.delete("/cons/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const consultation = await Consultation.findById(id)
+      .populate("doctorId")
+      .populate("patientId");
+    if (!consultation) {
+      return res.status(404).json({ message: "Consultation not found!" });
+    }
 
+    await Patient.findByIdAndUpdate(consultation.patientId._id, {
+      $pull: { requestedConsultations: consultation._id },
+    });
 
+    await Doctor.findByIdAndUpdate(consultation.doctorId._id, {
+      $pull: { pendingConsultations: consultation._id },
+    });
+    return res.status(200).json({ message: "Consultation cancelled!" });
+  } catch (e) {
+    res.status(500).json({
+      error:
+        e.message || "Error fetching accepted consultations for the doctor.",
+    });
+  }
+});
 
 router.post("/paytabs/create/:consultationId", async (req, res) => {
   try {
@@ -59,7 +82,9 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
       });
 
     if (!consultation) {
-      return res.status(404).json({ message: "Consultation, doctor, or patient not found" });
+      return res
+        .status(404)
+        .json({ message: "Consultation, doctor, or patient not found" });
     }
 
     const doctor = consultation.doctorId;
@@ -74,7 +99,8 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
       cart_currency: "USD",
       cart_amount: amount,
       cart_description: `Consultation with Dr. ${doctor.name} ${doctor.lastName}`,
-      callback: "https://estishara-backend.vercel.app/api/consultation/paytabs/callback",
+      callback:
+        "https://estishara-backend.vercel.app/api/consultation/paytabs/callback",
       return: "https://estishara-backend.vercel.app/",
       customer_details: {
         name: `${patient.name} ${patient.lastName}`,
@@ -111,7 +137,10 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
     const paymentUrl = response.data.redirect_url;
     res.json({ payment_url: paymentUrl });
   } catch (err) {
-    console.error("PayTabs error:", err.response ? err.response.data : err.message);
+    console.error(
+      "PayTabs error:",
+      err.response ? err.response.data : err.message
+    );
     res.status(500).json({ message: "Payment initialization failed" });
   }
 });
@@ -119,27 +148,31 @@ router.post("/paytabs/create/:consultationId", async (req, res) => {
 // Payment callback (PayTabs server-to-server)
 router.post("/paytabs/callback", async (req, res) => {
   try {
-    console.log('Received callback:', req.body);
+    console.log("Received callback:", req.body);
     const { cart_id, tran_ref, payment_result } = req.body;
     const consultationId = cart_id.split("_")[1];
 
-    const consultation = await Consultation.findById(consultationId).populate("doctorId");
+    const consultation = await Consultation.findById(consultationId).populate(
+      "doctorId"
+    );
     if (!consultation || !consultation.doctorId) {
-      return res.status(404).json({error:"Consultation or doctor not found"});
+      return res
+        .status(404)
+        .json({ error: "Consultation or doctor not found" });
     }
 
     const doctor = consultation.doctorId;
     const patient = await Patient.findById(consultation.patientId);
     if (!patient) {
-      return res.status(404).json({error:"Patient not found"});
+      return res.status(404).json({ error: "Patient not found" });
     }
 
     if (payment_result.response_status !== "A") {
-      return res.status(400).json({error:"Payment not successful"});
+      return res.status(400).json({ error: "Payment not successful" });
     }
 
     const fullAmount = doctor.consultationFees;
-    const platformCut = fullAmount * 0.20;
+    const platformCut = fullAmount * 0.2;
     const paidToDoctor = fullAmount - platformCut;
 
     consultation.status = "paid";
@@ -166,17 +199,19 @@ router.post("/paytabs/callback", async (req, res) => {
     await consultation.save();
     await doctor.save();
     await patient.save();
-    
+
     const notification = new Notification({
-      title:"Payment Sucessful",
-      content:`Mr.${patient.name} ${patient.lastName} has paid for your consultation.Please start it now!`,
-      receiverModel:'Doctor',
-      receiver:doctor._id,
+      title: "Payment Sucessful",
+      content: `Mr.${patient.name} ${patient.lastName} has paid for your consultation.Please start it now!`,
+      receiverModel: "Doctor",
+      receiver: doctor._id,
     });
 
     await notification.save();
 
-    res.status(200).json({message:"Payment confirmed and consultation updated"});
+    res
+      .status(200)
+      .json({ message: "Payment confirmed and consultation updated" });
   } catch (error) {
     console.error("Callback error:", error.message);
     res.status(500).send("Internal Server Error");
