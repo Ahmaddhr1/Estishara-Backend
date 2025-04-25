@@ -409,4 +409,22 @@ router.put("acceptCons/:id", async (req, res) => {
   }
 });
 
+router.delete("Cons/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const consultation = await Consultation.findById(id).populate("doctorId").populate("patientId");
+    if (!consultation) {
+      return res.status(404).json({ message: "Consultation not found!" });
+    }
+    const doctor = consultation.doctorId;
+    const patient =consultation.patientId;
+    
+  } catch (e) {
+    res.status(500).json({
+      error:
+        e.message || "Error fetching accepted consultations for the doctor.",
+    });
+  }
+});
+
 module.exports = router;

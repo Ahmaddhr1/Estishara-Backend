@@ -188,9 +188,7 @@ router.get("/gethc/:id", async (req, res) => {
   }
 });
 
-router.get(
-  "recommended/:id",
-  /*authenticateToken*/ async (req, res) => {
+router.get("/recommended/:id",/*authenticateToken ,*/ async (req, res) => {
     try {
       // const reqUserId = req.user?.id;
       // if (reqUserId !== id) {
