@@ -188,46 +188,21 @@ router.get("/gethc/:id", async (req, res) => {
   }
 });
 
-router.get("/recommended/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    const patient = await Patient.findById(id)
-      .populate({
-        path: "recommendedDoctors",
-        select: "name lastName email",
-      })
-      .populate({
-        path: "requestedConsultations",
-        select: "status",
-      })
-      .populate({
-        path: "historyConsultations",
-        select: "status",
-      });
-    if (!patient) {
-      res.status(404).json({ error: "Patient not found!!" });
-    }
-    res.status(200).json({ patient: sanitizePatient(patient) });
-  } catch (e) {
-    res.status(500).json({ error: e.message || "Error occured" });
-  }
-});
-
-router.get("recommendations/:id", authenticateToken, async (req, res) => {
+router.get("recommended/:id", /*authenticateToken*/  async (req, res) => {
   try {
-    const reqUserId = req.user?.id;
-    if (reqUserId !== id) {
-      return res.status(403).json({
-        error: "Forbidden: You are not see  this detail",
-      });
-    }
+    // const reqUserId = req.user?.id;
+    // if (reqUserId !== id) {
+    //   return res.status(403).json({
+    //     error: "Forbidden: You are not allow to see  this detail",
+    //   });
+    // }
     const { id } = req.params;
     const patient = await patient
       .findById(id)
       .populate({
         path: "recommendedDoctors",
-        select: "name lastName profilePic email consultationFees",
+        select: "name lastName profilePic email specialityId",
       })
       .populate({
         path: "historyConsultations",
@@ -242,7 +217,7 @@ router.get("recommendations/:id", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "Patient Not found" });
     }
 
-    return res.status(200).json(patient);
+    return res.status(200).json({ patient: sanitizePatient(patient) });
   } catch (e) {
     res.status(500).json({ error: e.message || "Error occured" });
   }

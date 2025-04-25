@@ -6,6 +6,7 @@ const Patient = require("../models/Patient");
 const authenticateToken = require("../utils/middleware");
 const mongoose = require("mongoose");
 const { sanitizeDoctor, sanitizeDoctors } = require("../utils/sanitize");
+const Consultation = require("../models/Consultation");
 
 // Utility to remove password from doctor object
 
@@ -131,25 +132,25 @@ router.get("/search", authenticateToken, async (req, res) => {
 router.get("/topten", async (req, res) => {
   try {
     const topDoctors = await Doctor.find({ isPendingDoctor: false })
-      .select('-password') 
-      .sort({ recommendedBy: -1 }) 
-      .limit(10) 
-      .populate('specialityId', 'title') 
+      .select("-password")
+      .sort({ recommendedBy: -1 })
+      .limit(10)
+      .populate("specialityId", "title")
       .populate({
-        path: 'pendingConsultations',
-        select: 'status'
+        path: "pendingConsultations",
+        select: "status",
       })
       .populate({
-        path: 'acceptedConsultations', 
-        select: 'status'
+        path: "acceptedConsultations",
+        select: "status",
       });
 
     res.status(200).json(topDoctors);
   } catch (error) {
     console.error("Error fetching top doctors:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Failed to fetch top doctors",
-      error: error.message 
+      error: error.message,
     });
   }
 });
@@ -385,12 +386,27 @@ router.get("/getac/:id", async (req, res) => {
 
     res.status(200).json({ doctor: sanitizeDoctor(doctor) });
   } catch (error) {
-    console.error(error);
     res.status(500).json({
       message: "Error fetching accepted consultations for the doctor.",
     });
   }
 });
 
+router.put("acceptCons/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const consultation = await Consultation.findById(id);
+    if (!consultation) {
+      return res.status(404).json({ message: "Consultation not found!" });
+    }
+    consultation.status = "accepted";
+    await consultation.save();
+  } catch (e) {
+    res.status(500).json({
+      error:
+        e.message || "Error fetching accepted consultations for the doctor.",
+    });
+  }
+});
 
 module.exports = router;
