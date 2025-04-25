@@ -188,39 +188,45 @@ router.get("/gethc/:id", async (req, res) => {
   }
 });
 
+router.get(
+  "recommended/:id",
+  /*authenticateToken*/ async (req, res) => {
+    try {
+      // const reqUserId = req.user?.id;
+      // if (reqUserId !== id) {
+      //   return res.status(403).json({
+      //     error: "Forbidden: You are not allow to see  this detail",
+      //   });
+      // }
+      const { id } = req.params;
+      const patient = await patient
+        .findById(id)
+        .populate({
+          path: "recommendedDoctors",
+          select: "name lastName email consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        })
+        .populate({
+          path: "historyConsultations",
+          select: "status",
+        })
+        .populate({
+          path: "requestedConsultations",
+          select: "status",
+        });
 
-router.get("recommended/:id", /*authenticateToken*/  async (req, res) => {
-  try {
-    // const reqUserId = req.user?.id;
-    // if (reqUserId !== id) {
-    //   return res.status(403).json({
-    //     error: "Forbidden: You are not allow to see  this detail",
-    //   });
-    // }
-    const { id } = req.params;
-    const patient = await patient
-      .findById(id)
-      .populate({
-        path: "recommendedDoctors",
-        select: "name lastName profilePic email specialityId",
-      })
-      .populate({
-        path: "historyConsultations",
-        select: "status",
-      })
-      .populate({
-        path: "requestedConsultations",
-        select: "status",
-      });
+      if (!patient) {
+        return res.status(404).json({ error: "Patient Not found" });
+      }
 
-    if (!patient) {
-      return res.status(404).json({ error: "Patient Not found" });
+      return res.status(200).json({ patient: sanitizePatient(patient) });
+    } catch (e) {
+      res.status(500).json({ error: e.message || "Error occured" });
     }
-
-    return res.status(200).json({ patient: sanitizePatient(patient) });
-  } catch (e) {
-    res.status(500).json({ error: e.message || "Error occured" });
   }
-});
+);
 
 module.exports = router;
