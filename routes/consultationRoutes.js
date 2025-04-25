@@ -49,15 +49,15 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
     const consultation = await Consultation.findById(id)
       .populate("doctorId")
       .populate("patientId");
+    if (!consultation) {
+      return res.status(404).json({ message: "Consultation not found!" });
+    }
+
     const reqUserId = req.user?.id;
     if (reqUserId !== consultation.doctorId._id) {
       return res.status(403).json({
         error: "Forbidden: You are not authorizedd!",
       });
-    }
-
-    if (!consultation) {
-      return res.status(404).json({ message: "Consultation not found!" });
     }
 
     await Patient.findByIdAndUpdate(consultation.patientId._id, {
