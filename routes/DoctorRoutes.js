@@ -131,10 +131,10 @@ router.get("/search", authenticateToken, async (req, res) => {
 router.get("/topten", async (req, res) => {
   try {
     const topDoctors = await Doctor.find({ isPendingDoctor: false })
-      .select('-password') // Exclude password
-      .sort({ recommendedBy: -1 }) // Sort by array length
-      .limit(10) // Get only 10 doctors
-      .populate('specialityId', 'title') // Populate speciality name
+      .select('-password') 
+      .sort({ recommendedBy: -1 }) 
+      .limit(10) 
+      .populate('specialityId', 'title') 
       .populate({
         path: 'pendingConsultations',
         select: 'status'
