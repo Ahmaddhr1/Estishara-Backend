@@ -43,7 +43,7 @@ router.post("/request", async (req, res) => {
   }
 });
 
-router.delete("/cons/:id", authenticateToken, async (req, res) => {
+router.delete("/cons/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const consultation = await Consultation.findById(id)
@@ -52,22 +52,22 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
     if (!consultation) {
       return res.status(404).json({ message: "Consultation not found!" });
     }
+    console.log(consultation.patientId._id)
+    // const reqUserId = req.user?.id;
+    // if (reqUserId !== consultation.doctorId._id) {
+    //   return res.status(403).json({
+    //     error: "Forbidden: You are not authorizedd!",
+    //   });
+    // }
 
-    const reqUserId = req.user?.id;
-    if (reqUserId !== consultation.doctorId._id) {
-      return res.status(403).json({
-        error: "Forbidden: You are not authorizedd!",
-      });
-    }
+    // await Patient.findByIdAndUpdate(consultation.patientId._id, {
+    //   $pull: { requestedConsultations: consultation._id },
+    // });
 
-    await Patient.findByIdAndUpdate(consultation.patientId._id, {
-      $pull: { requestedConsultations: consultation._id },
-    });
-
-    await Doctor.findByIdAndUpdate(consultation.doctorId._id, {
-      $pull: { pendingConsultations: consultation._id },
-    });
-    return res.status(200).json({ message: "Consultation cancelled!" });
+    // await Doctor.findByIdAndUpdate(consultation.doctorId._id, {
+    //   $pull: { pendingConsultations: consultation._id },
+    // });
+    // return res.status(200).json({ message: "Consultation cancelled!" });
   } catch (e) {
     res.status(500).json({
       error:
