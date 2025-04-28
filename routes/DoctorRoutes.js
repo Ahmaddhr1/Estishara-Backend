@@ -376,8 +376,11 @@ router.get("/getac/:id", async (req, res) => {
       })
       .populate("specialityId", "title")
       .populate({
-        path: "requestedConsultations",
-        select: "status",
+        path: "pendingConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
       });
 
     if (!doctor) {

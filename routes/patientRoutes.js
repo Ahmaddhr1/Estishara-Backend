@@ -142,7 +142,14 @@ router.get("/getrc/:id", async (req, res) => {
     const patient = await Patient.findById(id)
       .populate({
         path: "requestedConsultations",
-        select: "status",
+        populate: {
+          path: "doctorId",
+          select: "name lastName profilePic email",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
       })
       .populate({
         path: "historyConsultations",
@@ -168,7 +175,14 @@ router.get("/gethc/:id", async (req, res) => {
     const patient = await Patient.findById(id)
       .populate({
         path: "historyConsultations",
-        select: "status",
+        populate: {
+          path: "doctorId",
+          select: "name lastName profilePic email",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
       })
       .populate({
         path: "requestedConsultations",
@@ -192,7 +206,7 @@ router.get("/recommended/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const reqUserId = req.user?.id;
-    console.log(reqUserId)
+    console.log(reqUserId);
     if (reqUserId !== id) {
       return res.status(403).json({
         error: "Forbidden: You are not allow to see  this detail",
