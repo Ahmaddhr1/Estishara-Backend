@@ -347,7 +347,10 @@ router.get("/getpc/:id", async (req, res) => {
       .populate("specialityId", "title")
       .populate({
         path: "acceptedConsultations",
-        select: "status",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
       });
 
     if (!doctor) {
