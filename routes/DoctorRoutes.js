@@ -521,13 +521,16 @@ router.get("/getoc/:id", async (req, res) => {
 router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const consultation = await Consultation.findById(id);
+    const consultation = await Consultation.findById(id).populate("doctorId")
     const reqUserId = req.user?.id;
-    if (reqUserId !== consultation.doctorId) {
+    console.log("ssss",reqUserId)
+    console.log("doctt",consultation.doctorId._id)
+    if (reqUserId != consultation.doctorId._id) {
       return res.status(403).json({
         error: "Forbidden: You are not authorizedd!",
       });
     }
+    
     if (!consultation) {
       return res.status(404).json({ message: "Consultation not found!" });
     }
