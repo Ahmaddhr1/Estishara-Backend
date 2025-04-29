@@ -216,7 +216,7 @@ router.post("/paytabs/callback", async (req, res) => {
   }
 });
 
-router.put("/startc/:id", async (req, res) => {
+router.put("/start/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -265,7 +265,7 @@ router.put("/startc/:id", async (req, res) => {
   }
 });
 
-router.put("/endc/:id", async (req, res) => {
+router.put("/end/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -296,7 +296,7 @@ router.put("/endc/:id", async (req, res) => {
   }
 });
 
-router.put("/cancelc/:id", async (req, res) => {
+router.put("/cancel/:id", async (req, res) => {
   try {
     const { id } = req.params;
 

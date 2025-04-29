@@ -136,7 +136,6 @@ const doctorSchema = new Schema(
       default: [],
     },
   },
-
   { timestamps: true }
 );
 
