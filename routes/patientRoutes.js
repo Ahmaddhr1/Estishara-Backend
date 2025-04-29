@@ -145,7 +145,7 @@ router.get("/getrc/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -161,7 +161,7 @@ router.get("/getrc/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -173,7 +173,7 @@ router.get("/getrc/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -203,7 +203,7 @@ router.get("/gethc/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -219,7 +219,7 @@ router.get("/gethc/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -231,7 +231,7 @@ router.get("/gethc/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -261,7 +261,7 @@ router.get("/getac/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -277,7 +277,7 @@ router.get("/getac/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -289,7 +289,7 @@ router.get("/getac/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -319,7 +319,7 @@ router.get("/getoc/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -335,7 +335,7 @@ router.get("/getoc/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -347,7 +347,7 @@ router.get("/getoc/:id", async (req, res) => {
         populate: {
           path: "doctorId",
           select:
-            "name lastName profilePic email responseTime consultationFees",
+            "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
