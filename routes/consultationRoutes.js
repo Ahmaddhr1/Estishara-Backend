@@ -228,6 +228,12 @@ router.put("/start/:id", async (req, res) => {
       return res.status(404).json({ error: "Consultation not found!" });
     }
 
+    // if (consultation.status !== "paid") {
+    //   return res
+    //     .status(401)
+    //     .json({ message: "U cant start consultation ,Its not paid!" });
+    // }
+
     const doctor = consultation.doctorId;
     const patient = consultation.patientId;
 
@@ -276,8 +282,8 @@ router.put("/end/:id", async (req, res) => {
     if (!consultation) {
       return res.status(404).json({ error: "Consultation not found!" });
     }
-    consultation.duration= duration;
-    await consultation.save()
+    consultation.duration = duration;
+    await consultation.save();
     const doctor = consultation.doctorId;
     const patient = consultation.patientId;
 
@@ -286,7 +292,7 @@ router.put("/end/:id", async (req, res) => {
 
     doctor.historyConsultations.push(consultation._id);
     patient.historyConsultations.push(consultation._id);
-     
+
     await doctor.save();
     await patient.save();
 
@@ -314,8 +320,7 @@ router.put("/cancel/:id", async (req, res) => {
 
     if (consultation.status !== "requested") {
       return res.status(400).json({
-        error:
-          "Consultation cannot be canceled, it was accepted!",
+        error: "Consultation cannot be canceled, it was accepted!",
       });
     }
 
