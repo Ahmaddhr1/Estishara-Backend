@@ -144,7 +144,8 @@ router.get("/getrc/:id", async (req, res) => {
         path: "requestedConsultations",
         populate: {
           path: "doctorId",
-          select: "name lastName profilePic email",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -154,6 +155,30 @@ router.get("/getrc/:id", async (req, res) => {
       .populate({
         path: "historyConsultations",
         select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
+      })
+      .populate({
+        path: "ongoingConsultation",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
       });
 
     if (!patient) {
@@ -177,7 +202,8 @@ router.get("/gethc/:id", async (req, res) => {
         path: "historyConsultations",
         populate: {
           path: "doctorId",
-          select: "name lastName profilePic email",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -187,6 +213,146 @@ router.get("/gethc/:id", async (req, res) => {
       .populate({
         path: "requestedConsultations",
         select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
+      })
+      .populate({
+        path: "ongoingConsultation",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
+      });
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found!" });
+    }
+
+    res.status(200).json({ patient: sanitizePatient(patient) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error fetching history consultations for the patient.",
+    });
+  }
+});
+
+router.get("/getac/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patient = await Patient.findById(id)
+      .populate({
+        path: "historyConsultations",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
+      })
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
+      })
+      .populate({
+        path: "ongoingConsultation",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
+      });
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found!" });
+    }
+
+    res.status(200).json({ patient: sanitizePatient(patient) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error fetching history consultations for the patient.",
+    });
+  }
+});
+
+router.get("/getoc/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const patient = await Patient.findById(id)
+      .populate({
+        path: "historyConsultations",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
+      })
+      .populate({
+        path: "requestedConsultations",
+        select: "status",
+      })
+      .populate({
+        path: "acceptedConsultations",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
+      })
+      .populate({
+        path: "ongoingConsultation",
+        populate: {
+          path: "doctorId",
+          select:
+            "name lastName profilePic email responseTime consultationFees",
+          populate: {
+            path: "specialityId",
+            select: "title",
+          },
+        },
       });
 
     if (!patient) {

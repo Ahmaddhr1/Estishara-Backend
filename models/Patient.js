@@ -115,6 +115,16 @@ const patientSchema = new Schema(
       ref: "Consultation",
       default: [],
     },
+    ongoingConsultation: {
+      type: Schema.Types.ObjectId,
+      ref: "Consultation",
+      default: "",
+    },
+    acceptedConsultations: {
+      type: [Schema.Types.ObjectId],
+      ref: "Consultation",
+      default: [],
+    },
   },
   { timestamps: true }
 );

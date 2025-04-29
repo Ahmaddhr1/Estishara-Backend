@@ -184,9 +184,6 @@ router.post("/paytabs/callback", async (req, res) => {
       paidToDoctor,
     };
 
-    consultation.respondTime = doctor.respondTime;
-    doctor.respondTime += 1;
-
     doctor.acceptedConsultations.push(consultation._id);
     doctor.pendingConsultations = doctor.pendingConsultations.filter(
       (id) => id.toString() !== consultation._id.toString()
@@ -195,7 +192,7 @@ router.post("/paytabs/callback", async (req, res) => {
     patient.requestedConsultations = patient.requestedConsultations.filter(
       (id) => id.toString() !== consultation._id.toString()
     );
-    patient.historyConsultations.push(consultation._id);
+    patient.acceptedConsultations.push(consultation._id);
 
     await consultation.save();
     await doctor.save();
@@ -216,6 +213,131 @@ router.post("/paytabs/callback", async (req, res) => {
   } catch (error) {
     console.error("Callback error:", error.message);
     res.status(500).send("Internal Server Error");
+  }
+});
+
+router.put("/startc/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const consultation = await Consultation.findById(id)
+      .populate("doctorId")
+      .populate("patientId");
+
+    if (!consultation) {
+      return res.status(404).json({ error: "Consultation not found!" });
+    }
+
+    const doctor = consultation.doctorId;
+    const patient = consultation.patientId;
+
+    if (doctor.ongoingConsultation) {
+      return res.status(401).json({
+        error: "You can't start a new consultation while you are in one!",
+      });
+    }
+
+    await Doctor.updateOne(
+      { _id: doctor._id },
+      { $pull: { acceptedConsultations: consultation._id } }
+    );
+
+    await Patient.updateOne(
+      { _id: patient._id },
+      { $pull: { acceptedConsultations: consultation._id } }
+    );
+
+    doctor.ongoingConsultation = consultation._id;
+    patient.ongoingConsultation = consultation._id;
+
+    await doctor.save();
+    await patient.save();
+
+    consultation.status = "ongoing";
+    await consultation.save();
+
+    return res
+      .status(200)
+      .json({ message: "Consultation started successfully!" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.put("/endc/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const consultation = await Consultation.findById(id)
+      .populate("doctorId")
+      .populate("patientId");
+
+    if (!consultation) {
+      return res.status(404).json({ error: "Consultation not found!" });
+    }
+
+    const doctor = consultation.doctorId;
+    const patient = consultation.patientId;
+
+    doctor.ongoingConsultation = null;
+    patient.ongoingConsultation = null;
+
+    doctor.historyConsultations.push(consultation._id);
+    patient.historyConsultations.push(consultation._id);
+
+    await doctor.save();
+    await patient.save();
+
+    return res.status(200).json({ message: "Ended Successfully!" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.put("/cancelc/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const consultation = await Consultation.findById(id)
+      .populate("doctorId")
+      .populate("patientId");
+
+    if (!consultation) {
+      return res.status(404).json({ error: "Consultation not found!" });
+    }
+
+    const doctor = consultation.doctorId;
+    const patient = consultation.patientId;
+
+    if (consultation.status !== "requested") {
+      return res
+        .status(400)
+        .json({
+          error:
+            "Consultation cannot be canceled, it is not in requested status.",
+        });
+    }
+
+    await Doctor.updateOne(
+      { _id: doctor._id },
+      { $pull: { pendingConsultations: consultation._id } }
+    );
+
+    await Patient.updateOne(
+      { _id: patient._id },
+      { $pull: { requestedConsultations: consultation._id } }
+    );
+
+    await Consultation.findByIdAndDelete(id);
+
+    return res
+      .status(200)
+      .json({ message: "Consultation canceled and deleted successfully!" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

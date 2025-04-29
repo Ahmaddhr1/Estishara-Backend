@@ -125,6 +125,16 @@ const doctorSchema = new Schema(
       type: [String],
       default: [],
     },
+    ongoingConsultation: {
+      type: Schema.Types.ObjectId,
+      ref: "Consultation",
+      default: "",
+    },
+    historyConsultations: {
+      type: [Schema.Types.ObjectId],
+      ref: "Consultation",
+      default: [],
+    },
   },
 
   { timestamps: true }

@@ -351,6 +351,20 @@ router.get("/getpc/:id", async (req, res) => {
           path: "patientId",
           select: "name lastName profilePic email",
         },
+      })
+      .populate({
+        path: "historyConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate({
+        path: "ongoingConsultation",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
       });
 
     if (!doctor) {
@@ -380,6 +394,112 @@ router.get("/getac/:id", async (req, res) => {
       .populate("specialityId", "title")
       .populate({
         path: "pendingConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate({
+        path: "historyConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate({
+        path: "ongoingConsultation",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      });
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found!" });
+    }
+
+    res.status(200).json({ doctor: sanitizeDoctor(doctor) });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching accepted consultations for the doctor.",
+    });
+  }
+});
+
+router.get("/gethc/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doctor = await Doctor.findById(id)
+      .populate({
+        path: "acceptedConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate("specialityId", "title")
+      .populate({
+        path: "pendingConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate({
+        path: "historyConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate({
+        path: "ongoingConsultation",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      });
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found!" });
+    }
+
+    res.status(200).json({ doctor: sanitizeDoctor(doctor) });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching accepted consultations for the doctor.",
+    });
+  }
+});
+
+router.get("/getoc/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doctor = await Doctor.findById(id)
+      .populate({
+        path: "acceptedConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate("specialityId", "title")
+      .populate({
+        path: "pendingConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate({
+        path: "historyConsultations",
+        populate: {
+          path: "patientId",
+          select: "name lastName profilePic email",
+        },
+      })
+      .populate({
+        path: "ongoingConsultation",
         populate: {
           path: "patientId",
           select: "name lastName profilePic email",
