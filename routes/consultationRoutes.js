@@ -339,42 +339,41 @@ router.put("/cancelc/:id", async (req, res) => {
   }
 });
 
-router.delete("/all", async (req, res) => {
-  try {
-    // Remove all consultations from the database
-    await Consultation.deleteMany({});
+// router.delete("/all", async (req, res) => {
+//   try {
+//     await Consultation.deleteMany({});
 
-    await Doctor.updateMany(
-      {},
-      {
-        $set: {
-          ongoingConsultation: null,
-          acceptedConsultations: [],
-          pendingConsultations: [],
-          historyConsultations: [],
-        },
-      }
-    );
+//     await Doctor.updateMany(
+//       {},
+//       {
+//         $set: {
+//           ongoingConsultation: null,
+//           acceptedConsultations: [],
+//           pendingConsultations: [],
+//           historyConsultations: [],
+//         },
+//       }
+//     );
 
-    await Patient.updateMany(
-      {},
-      {
-        $set: {
-          ongoingConsultation: null,
-          requestedConsultations: [],
-          acceptedConsultations: [],
-          historyConsultations: [],
-        },
-      }
-    );
+//     await Patient.updateMany(
+//       {},
+//       {
+//         $set: {
+//           ongoingConsultation: null,
+//           requestedConsultations: [],
+//           acceptedConsultations: [],
+//           historyConsultations: [],
+//         },
+//       }
+//     );
 
-    return res
-      .status(200)
-      .json({ message: "All consultations deleted successfully!" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
+//     return res
+//       .status(200)
+//       .json({ message: "All consultations deleted successfully!" });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 module.exports = router;
