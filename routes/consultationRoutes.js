@@ -277,6 +277,7 @@ router.put("/end/:id", async (req, res) => {
       return res.status(404).json({ error: "Consultation not found!" });
     }
     consultation.duration= duration;
+    await consultation.save()
     const doctor = consultation.doctorId;
     const patient = consultation.patientId;
 
