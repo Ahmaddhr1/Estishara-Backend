@@ -521,7 +521,6 @@ router.get("/getoc/:id", async (req, res) => {
 router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-
     const consultation = await Consultation.findById(id);
     const reqUserId = req.user?.id;
     if (reqUserId !== consultation.doctorId) {
@@ -534,6 +533,7 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
     }
     consultation.status = "accepted";
     await consultation.save();
+    return res.status(200).json({message:"Consultation Accepted!"})
   } catch (e) {
     res.status(500).json({
       error:
