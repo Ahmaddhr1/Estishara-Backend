@@ -312,12 +312,10 @@ router.put("/cancelc/:id", async (req, res) => {
     const patient = consultation.patientId;
 
     if (consultation.status !== "requested") {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Consultation cannot be canceled, it is not in requested status.",
-        });
+      return res.status(400).json({
+        error:
+          "Consultation cannot be canceled, it is not in requested status.",
+      });
     }
 
     await Doctor.updateOne(
@@ -335,6 +333,44 @@ router.put("/cancelc/:id", async (req, res) => {
     return res
       .status(200)
       .json({ message: "Consultation canceled and deleted successfully!" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.delete("/all", async (req, res) => {
+  try {
+    // Remove all consultations from the database
+    await Consultation.deleteMany({});
+
+    await Doctor.updateMany(
+      {},
+      {
+        $set: {
+          ongoingConsultation: null,
+          acceptedConsultations: [],
+          pendingConsultations: [],
+          historyConsultations: [],
+        },
+      }
+    );
+
+    await Patient.updateMany(
+      {},
+      {
+        $set: {
+          ongoingConsultation: null,
+          requestedConsultations: [],
+          acceptedConsultations: [],
+          historyConsultations: [],
+        },
+      }
+    );
+
+    return res
+      .status(200)
+      .json({ message: "All consultations deleted successfully!" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
