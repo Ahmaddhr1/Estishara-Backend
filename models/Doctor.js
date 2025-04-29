@@ -128,7 +128,7 @@ const doctorSchema = new Schema(
     ongoingConsultation: {
       type: Schema.Types.ObjectId,
       ref: "Consultation",
-      default: "",
+      default: null,
     },
     historyConsultations: {
       type: [Schema.Types.ObjectId],
