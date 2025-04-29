@@ -268,7 +268,7 @@ router.put("/start/:id", async (req, res) => {
 router.put("/end/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
+    const { duration } = req.body;
     const consultation = await Consultation.findById(id)
       .populate("doctorId")
       .populate("patientId");
@@ -276,7 +276,7 @@ router.put("/end/:id", async (req, res) => {
     if (!consultation) {
       return res.status(404).json({ error: "Consultation not found!" });
     }
-
+    consultation.duration= duration;
     const doctor = consultation.doctorId;
     const patient = consultation.patientId;
 
@@ -285,7 +285,7 @@ router.put("/end/:id", async (req, res) => {
 
     doctor.historyConsultations.push(consultation._id);
     patient.historyConsultations.push(consultation._id);
-
+     
     await doctor.save();
     await patient.save();
 
@@ -314,7 +314,7 @@ router.put("/cancel/:id", async (req, res) => {
     if (consultation.status !== "requested") {
       return res.status(400).json({
         error:
-          "Consultation cannot be canceled, it is not in requested status.",
+          "Consultation cannot be canceled, it was accepted!",
       });
     }
 
