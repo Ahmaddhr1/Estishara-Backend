@@ -341,7 +341,9 @@ router.post("/login", async (req, res) => {
     // Check Patient first
     let user = await Patient.findOne({ email: emailNormalized })
       .populate({ path: "historyConsultations", select: "status" })
-      .populate({ path: "requestedConsultations", select: "status" });
+      .populate({ path: "requestedConsultations", select: "status" })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "acceptedConsultations", select: "status" });
     let role = "patient";
 
     // If not patient, check Doctor
@@ -349,7 +351,9 @@ router.post("/login", async (req, res) => {
       user = await Doctor.findOne({ email: emailNormalized })
         .populate("specialityId")
         .populate({ path: "pendingConsultations", select: "status" })
-        .populate({ path: "acceptedConsultations", select: "status" });
+        .populate({ path: "acceptedConsultations", select: "status" })
+        .populate({ path: "ongoingConsultation", select: "status" })
+        .populate({ path: "historyConsultations", select: "status" });
       role = "doctor";
     }
 
