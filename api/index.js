@@ -12,6 +12,7 @@ const dashboardRoutes = require("../routes/dashboardRoutes.js");
 const notificationRoutes = require("../routes/notificationRoutes.js");
 const aiRoutes = require("../routes/adminRoutes.js");
 const connectDB = require("../config/database.js");
+const messaging = require("../config/firebaseConfig.js")
 
 try {
   connectDB();
@@ -43,6 +44,31 @@ app.get("/ahmad", (req, res) => {
 app.get("*", (req, res) => {
   res.status(404).json({ message: "Page not found" });
 });
+
+app.post("/sendn", async (req, res) => {
+  const { id } = req.params; 
+  const { fcmToken } = req.body; 
+  
+  if (!fcmToken) {
+    return res.status(400).send("FCM Token is required");
+  }
+  const message = {
+    notification: {
+      title: "Fake Notification",
+      body: `This is a fake notification`,
+    },
+    token: fcmToken, 
+  };
+
+  try {
+    const response = await messaging?.send(message);
+    res.status(200).send({ success: true, message: "Notification sent successfully", response });
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    res.status(500).send({ success: false, message: "Failed to send notification", error });
+  }
+});
+
 
 
 app.listen(3000, () => {
