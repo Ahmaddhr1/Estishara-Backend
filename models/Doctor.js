@@ -137,7 +137,7 @@ const doctorSchema = new Schema(
     },
     fcmToken: {
       type: String,
-      default: "",
+      default:"",
     },
   },
   { timestamps: true }
