@@ -61,7 +61,7 @@ app.post("/sendn", async (req, res) => {
 
   try {
     const response = await messaging?.send(message);
-    res.status(200).send({ success: true, message: "Notification sent successfully", response });
+    res.status(200).send({message: "Notification sent successfully"});
   } catch (error) {
     console.error("Error sending notification:", error);
     res.status(500).send({ success: false, message: "Failed to send notification", error });
