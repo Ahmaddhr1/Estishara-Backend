@@ -21,7 +21,9 @@ router.get("/", async (req, res) => {
       .populate({
         path: "acceptedConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "historyConsultations", select: "status" });
 
     if (!doctors || doctors.length === 0) {
       return res.status(200).json({ message: "No doctors available" });
@@ -60,7 +62,9 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
       .populate({
         path: "acceptedConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "historyConsultations", select: "status" });
 
     const total = await Doctor.countDocuments(query);
 
@@ -115,7 +119,9 @@ router.get("/search", authenticateToken, async (req, res) => {
       .populate({
         path: "acceptedConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "historyConsultations", select: "status" });
 
     const total = await Doctor.countDocuments(query);
 
@@ -143,7 +149,9 @@ router.get("/topten", async (req, res) => {
       .populate({
         path: "acceptedConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "historyConsultations", select: "status" });
 
     res.status(200).json(topDoctors);
   } catch (error) {
@@ -166,7 +174,9 @@ router.get("/:id", async (req, res) => {
       .populate({
         path: "acceptedConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "historyConsultations", select: "status" });
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
@@ -210,7 +220,9 @@ router.put("/:id", authenticateToken, async (req, res) => {
       .populate({
         path: "acceptedConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "historyConsultations", select: "status" });
 
     res.json({
       doctor: sanitizeDoctor(populatedDoctor),
@@ -521,22 +533,22 @@ router.get("/getoc/:id", async (req, res) => {
 router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const consultation = await Consultation.findById(id).populate("doctorId")
+    const consultation = await Consultation.findById(id).populate("doctorId");
     const reqUserId = req.user?.id;
-    console.log("ssss",reqUserId)
-    console.log("doctt",consultation.doctorId._id)
+    console.log("ssss", reqUserId);
+    console.log("doctt", consultation.doctorId._id);
     if (reqUserId != consultation.doctorId._id) {
       return res.status(403).json({
         error: "Forbidden: You are not authorizedd!",
       });
     }
-    
+
     if (!consultation) {
       return res.status(404).json({ message: "Consultation not found!" });
     }
     consultation.status = "accepted";
     await consultation.save();
-    return res.status(200).json({message:"Consultation Accepted!"})
+    return res.status(200).json({ message: "Consultation Accepted!" });
   } catch (e) {
     res.status(500).json({
       error:

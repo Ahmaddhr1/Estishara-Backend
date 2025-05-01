@@ -38,7 +38,9 @@ router.get("/", authenticateToken, async (req, res) => {
       .populate({
         path: "historyConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "acceptedConsultations", select: "status" });
 
     if (!patients.length) {
       return res.status(404).json({ message: "Patients not found" });
@@ -61,7 +63,9 @@ router.get("/:id", async (req, res) => {
       .populate({
         path: "historyConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "acceptedConsultations", select: "status" });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -95,7 +99,9 @@ router.put("/:id", authenticateToken, async (req, res) => {
       .populate({
         path: "historyConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "acceptedConsultations", select: "status" });
     if (!updatedPatient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -144,8 +150,7 @@ router.get("/getrc/:id", async (req, res) => {
         path: "requestedConsultations",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -160,8 +165,7 @@ router.get("/getrc/:id", async (req, res) => {
         path: "acceptedConsultations",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -172,8 +176,7 @@ router.get("/getrc/:id", async (req, res) => {
         path: "ongoingConsultation",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -202,8 +205,7 @@ router.get("/gethc/:id", async (req, res) => {
         path: "historyConsultations",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -218,8 +220,7 @@ router.get("/gethc/:id", async (req, res) => {
         path: "acceptedConsultations",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -230,8 +231,7 @@ router.get("/gethc/:id", async (req, res) => {
         path: "ongoingConsultation",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -260,8 +260,7 @@ router.get("/getac/:id", async (req, res) => {
         path: "historyConsultations",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -276,8 +275,7 @@ router.get("/getac/:id", async (req, res) => {
         path: "acceptedConsultations",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -288,8 +286,7 @@ router.get("/getac/:id", async (req, res) => {
         path: "ongoingConsultation",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -318,8 +315,7 @@ router.get("/getoc/:id", async (req, res) => {
         path: "historyConsultations",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -334,8 +330,7 @@ router.get("/getoc/:id", async (req, res) => {
         path: "acceptedConsultations",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -346,8 +341,7 @@ router.get("/getoc/:id", async (req, res) => {
         path: "ongoingConsultation",
         populate: {
           path: "doctorId",
-          select:
-            "name lastName profilePic email respondTime consultationFees",
+          select: "name lastName profilePic email respondTime consultationFees",
           populate: {
             path: "specialityId",
             select: "title",
@@ -395,7 +389,9 @@ router.get("/recommended/:id", authenticateToken, async (req, res) => {
       .populate({
         path: "requestedConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "acceptedConsultations", select: "status" });
 
     if (!patient) {
       return res.status(404).json({ error: "Patient Not found" });

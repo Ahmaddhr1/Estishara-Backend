@@ -160,7 +160,9 @@ router.post("/doctor/register", async (req, res) => {
       .populate({
         path: "acceptedConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "historyConsultations", select: "status" });
 
     const speciality = await Speciality.findById(specialityId);
     if (!speciality) {
@@ -218,11 +220,15 @@ router.post("/refresh-token", async (req, res) => {
         user = await Doctor.findById(id)
           .populate("specialityId")
           .populate({ path: "pendingConsultations", select: "status" })
-          .populate({ path: "acceptedConsultations", select: "status" });
+          .populate({ path: "acceptedConsultations", select: "status" })
+          .populate({ path: "ongoingConsultation", select: "status" })
+          .populate({ path: "historyConsultations", select: "status" });
       } else {
         user = await Patient.findById(id)
           .populate({ path: "historyConsultations", select: "status" })
-          .populate({ path: "requestedConsultations", select: "status" });
+          .populate({ path: "requestedConsultations", select: "status" })
+          .populate({ path: "ongoingConsultation", select: "status" })
+          .populate({ path: "acceptedConsultations", select: "status" });
       }
 
       if (!user) {
@@ -299,7 +305,9 @@ router.post("/patient/register", async (req, res) => {
       .populate({
         path: "requestedConsultations",
         select: "status",
-      });
+      })
+      .populate({ path: "ongoingConsultation", select: "status" })
+      .populate({ path: "acceptedConsultations", select: "status" });
 
     const { accessToken, refreshToken } = generateTokens(populatedPatient);
 
@@ -482,7 +490,9 @@ router.post("/verify-token", async (req, res) => {
           .populate({
             path: "acceptedConsultations",
             select: "status",
-          });
+          })
+          .populate({ path: "ongoingConsultation", select: "status" })
+          .populate({ path: "historyConsultations", select: "status" });
 
         if (!user) {
           return res.status(404).json({ error: "Doctor not found" });
@@ -504,7 +514,9 @@ router.post("/verify-token", async (req, res) => {
           .populate({
             path: "requestedConsultations",
             select: "status",
-          });
+          })
+          .populate({ path: "ongoingConsultation", select: "status" })
+          .populate({ path: "acceptedConsultations", select: "status" });
 
         if (!user) {
           return res.status(404).json({ error: "Patient not found" });
