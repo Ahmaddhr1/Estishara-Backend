@@ -115,6 +115,7 @@ router.post("/doctor/register", async (req, res) => {
       age,
       documents,
       specialityId,
+      fcmToken,
       otpToken,
       otpCode,
     } = req.body;
@@ -163,6 +164,14 @@ router.post("/doctor/register", async (req, res) => {
       })
       .populate({ path: "ongoingConsultation", select: "status" })
       .populate({ path: "historyConsultations", select: "status" });
+
+      if (fcmToken) {
+        await Doctor.updateOne(
+          { _id: populatedDoctor._id },
+          { $set: { fcmToken } }
+        );
+      }
+  
 
     const speciality = await Speciality.findById(specialityId);
     if (!speciality) {
@@ -263,6 +272,7 @@ router.post("/patient/register", async (req, res) => {
       phoneNumber,
       age,
       password,
+      fcmToken,
       otpToken,
       otpCode,
     } = req.body;
@@ -309,6 +319,13 @@ router.post("/patient/register", async (req, res) => {
       .populate({ path: "ongoingConsultation", select: "status" })
       .populate({ path: "acceptedConsultations", select: "status" });
 
+    if (fcmToken) {
+      await Patient.updateOne(
+        { _id: populatedPatient._id },
+        { $set: { fcmToken } }
+      );
+    }
+
     const { accessToken, refreshToken } = generateTokens(populatedPatient);
 
     const patientObject = populatedPatient.toObject();
@@ -332,7 +349,7 @@ router.post("/patient/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, fcmToken } = req.body;
 
     if (!email || !password) {
       return res
@@ -372,6 +389,14 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ error: "Invalid credentials!" });
+    }
+
+    if (fcmToken) {
+      if (role === "patient") {
+        await Patient.updateOne({ _id: user._id }, { $set: { fcmToken } });
+      } else if (role === "doctor") {
+        await Doctor.updateOne({ _id: user._id }, { $set: { fcmToken } });
+      }
     }
 
     const { accessToken, refreshToken } = generateTokens(user);

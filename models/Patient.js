@@ -125,6 +125,10 @@ const patientSchema = new Schema(
       ref: "Consultation",
       default: [],
     },
+    fcmToken:{
+      type:String,
+      default:""
+    }
   },
   { timestamps: true }
 );

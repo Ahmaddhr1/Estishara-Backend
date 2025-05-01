@@ -1,8 +1,12 @@
-const admin = require("firebase-admin");
-const serviceAccount = require("./estishara-6d1e0-firebase-adminsdk-fbsvc-4eafc9b4b9.json");
+var admin = require("firebase-admin");
+
+var serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://estishara-6d1e0-default-rtdb.firebaseio.com",
 });
 
-module.exports = admin;
+const messaging = admin.messaging();
+
+module.exports = messaging;
