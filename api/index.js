@@ -44,36 +44,6 @@ app.get("*", (req, res) => {
   res.status(404).json({ message: "Page not found" });
 });
 
-app.post("/send-notification", async (req, res) => {
-  const { userToken } = req.body;
-   
-  try {
-    const notificationMessage = {
-      token: userToken, 
-      notification: {
-        title: "New Notification",
-        body: "Hiiii from estishara", 
-      },
-      android: {
-        priority: "high",
-      },
-      apns: {
-        payload: {
-          aps: {
-            sound: "default",
-          },
-        },
-      },
-    };
-
-    await messaging.send(notificationMessage);
-
-    res.status(200).send("Notification sent successfully!");
-  } catch (error) {
-    console.error("Error sending notification:", error);
-    res.status(500).send("Error sending notification");
-  }
-});
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
