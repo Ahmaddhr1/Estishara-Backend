@@ -8,7 +8,6 @@ yarn-error.log
 
 # Environment files
 .env
-*.json
 
 # Sequelize specific
 /sequelize-data/
