@@ -46,7 +46,6 @@ app.get("*", (req, res) => {
 });
 
 app.post("/sendn", async (req, res) => {
-  const { id } = req.params; 
   const { fcmToken } = req.body; 
   
   if (!fcmToken) {

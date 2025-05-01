@@ -450,7 +450,7 @@ router.post("/patient-google", async (req, res) => {
 
 // ✅ Google Sign-In for Doctor
 router.post("/doctor-google", async (req, res) => {
-  const { idToken, phoneNumber, age, specialityId, documents } = req.body;
+  const { idToken, phoneNumber, age, specialityId } = req.body;
   if (!idToken) return res.status(400).json({ error: "ID token is required" });
 
   try {
