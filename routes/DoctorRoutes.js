@@ -7,6 +7,8 @@ const authenticateToken = require("../utils/middleware");
 const mongoose = require("mongoose");
 const { sanitizeDoctor, sanitizeDoctors } = require("../utils/sanitize");
 const Consultation = require("../models/Consultation");
+const messaging = require("../config/firebaseConfig");
+const Notification = require("../models/Notification");
 
 // Utility to remove password from doctor object
 
@@ -281,6 +283,24 @@ router.put("/approve/:id", authenticateToken, async (req, res) => {
       isPendingDoctor: false,
     });
 
+    const notification = new Notification({
+      title: "You are Approved!",
+      content: `Dear Dr.${doctor.name} ${doctor.lastName} you were approved.Get ready to serve patients and good luck in your journey!`,
+      receiverModel: "Doctor",
+      receiver: doctor._id,
+    });
+
+    const fcmToken = doctor?.fcmToken;
+
+    const message = {
+      notification: {
+        title: notification.title,
+        body: notification.content,
+      },
+      token: fcmToken,
+    };
+    await messaging?.send(message);
+
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
@@ -533,10 +553,11 @@ router.get("/getoc/:id", async (req, res) => {
 router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const consultation = await Consultation.findById(id).populate("doctorId");
+    const consultation = await Consultation.findById(id)
+      .populate("doctorId")
+      .populate("patientId");
     const reqUserId = req.user?.id;
-    console.log("ssss", reqUserId);
-    console.log("doctt", consultation.doctorId._id);
+
     if (reqUserId != consultation.doctorId._id) {
       return res.status(403).json({
         error: "Forbidden: You are not authorizedd!",
@@ -548,6 +569,24 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
     }
     consultation.status = "accepted";
     await consultation.save();
+
+    const notification = new Notification({
+      title: "Consultation Accepted",
+      content: `Dr.${consultation.doctorId.name} ${consultation.doctorId.lastName} has accepted your consultation with you. Pay and continue!`,
+      receiverModel: "Patient",
+      receiver: consultation.patientId?._id,
+    });
+
+    const fcmToken = consultation.patientId?.fcmToken;
+
+    const message = {
+      notification: {
+        title: notification.title,
+        body: notification.content,
+      },
+      token: fcmToken,
+    };
+    await messaging?.send(message);
     return res.status(200).json({ message: "Consultation Accepted!" });
   } catch (e) {
     res.status(500).json({
