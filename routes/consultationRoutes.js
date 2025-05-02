@@ -74,6 +74,10 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
       });
     }
 
+    if(consultation.status !== "requested" || consultation.status !== "accepted") {
+      return res.status(400).json({message:"You can't cancel it!"})
+    }
+
     await Patient.findByIdAndUpdate(consultation.patientId, {
       $pull: { requestedConsultations: consultation._id },
     });
