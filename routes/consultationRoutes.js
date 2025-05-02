@@ -243,7 +243,7 @@ router.post("/paytabs/callback", async (req, res) => {
     await patient.save();
 
     const notification = new Notification({
-      title: "Payment Sucessful",
+      title: "Payment Sucessfull",
       content: `Mr.${patient.name} ${patient.lastName} has paid for your consultation.Please start it now!`,
       receiverModel: "Doctor",
       receiver: doctor._id,
