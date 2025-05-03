@@ -563,10 +563,10 @@ router.get("/getoc/:id", async (req, res) => {
 router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const consultation = await Consultation.findById(id)
-      .populate("doctorId")
-      .populate("patientId");
+    const consultation = await Consultation.findById(id).populate("doctorId");
     const patient = await Patient.findById(consultation?.patientId);
+    const doctor = await Doctor.findById(consultation?.doctorId);
+    console.log(patient);
     const reqUserId = req.user?.id;
 
     if (reqUserId != consultation.doctorId._id) {
@@ -578,12 +578,17 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
     if (!consultation) {
       return res.status(404).json({ message: "Consultation not found!" });
     }
+    if (consultation.status === "accepted") {
+      return res
+        .status(404)
+        .json({ message: "Consultation already  accepted!" });
+    }
     consultation.status = "accepted";
     await consultation.save();
 
     const notification = new Notification({
       title: "Consultation Accepted",
-      content: `Dr.${consultation.doctorId?.name} ${consultation.doctorId?.lastName} has accepted your consultation with you. Pay and continue!`,
+      content: `Dr.${doctor.name} ${doctor.lastName} has accepted your consultation.Pay Now to continue!`,
       receiverModel: "Patient",
       receiver: patient?._id,
     });
@@ -592,17 +597,23 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
     patient.notificationsRecieved.push(notification._id);
     await patient.save();
 
-    const fcmToken = consultation.patientId?.fcmToken;
-
+    const fcmToken = doctor?.fcmToken;
+    console.log("fcmToken:" + fcmToken);
     const message = {
       notification: {
         title: notification.title,
         body: notification.content,
       },
+      // data: {
+      //   senderId: "Me",
+      //   message: "Some message content",
+      // },
       token: fcmToken,
     };
-    await messaging?.send(message);
-    return res.status(200).json({ message: "Consultation Accepted!" });
+    const response = await messaging?.send(message);
+    return res
+      .status(200)
+      .json({ message: "Consultation Accepted!", response });
   } catch (e) {
     res.status(500).json({
       error:

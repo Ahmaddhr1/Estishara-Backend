@@ -48,6 +48,7 @@ router.post("/request", async (req, res) => {
     await doctor.save();
 
     const fcmToken = doctor?.fcmToken;
+    console.log("FCM TOKEN:"+fcmToken)
 
     const message = {
       notification: {
@@ -55,10 +56,11 @@ router.post("/request", async (req, res) => {
         body: notification.content,
       },
       token: fcmToken,
+      priority:"high"
     };
-    await messaging?.send(message);
+    const response = await messaging?.send(message);
 
-    res.status(201).json({ message: "Consultation created", consultation });
+    res.status(201).json({ message: "Consultation created", consultation,response });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error creating consultation"+err.message });
@@ -72,6 +74,7 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
       .populate("doctorId")
       .populate("patientId");
     const patient = await Patient.findById(consultation.patientId);
+    console.log(consultation.doctorId)
     if (!consultation) {
       return res.status(404).json({ message: "Consultation not found!" });
     }
