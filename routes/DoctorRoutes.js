@@ -550,13 +550,13 @@ router.get("/getoc/:id", async (req, res) => {
   }
 });
 
-router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
+router.put("/acceptCons/:id", authenticateToken , async (req, res) => {
   try {
     const { id } = req.params;
     const consultation = await Consultation.findById(id)
       .populate("doctorId")
       .populate("patientId");
-    const patient = await Patient.findById(consultation.patientId)
+    const patient = await Patient.findById(consultation?.patientId)
     const reqUserId = req.user?.id;
 
     if (reqUserId != consultation.doctorId._id) {
@@ -573,9 +573,9 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
 
     const notification = new Notification({
       title: "Consultation Accepted",
-      content: `Dr.${consultation.doctorId.name} ${consultation.doctorId.lastName} has accepted your consultation with you. Pay and continue!`,
+      content: `Dr.${consultation.doctorId?.name} ${consultation.doctorId?.lastName} has accepted your consultation with you. Pay and continue!`,
       receiverModel: "Patient",
-      receiver: patient._id,
+      receiver: patient?._id,
     });
     await notification.save();
 

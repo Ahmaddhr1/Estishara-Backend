@@ -71,6 +71,7 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
     const consultation = await Consultation.findById(id)
       .populate("doctorId")
       .populate("patientId");
+    const patient = await Patient.findById(consultation.patientId);
     if (!consultation) {
       return res.status(404).json({ message: "Consultation not found!" });
     }
@@ -98,14 +99,14 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
 
     const notification = new Notification({
       title: "Consultation Cancelled",
-      content: `Dr.${consultation.doctorId.name} ${consultation.doctorId.lastName} has cancelled your consultation .Try Finding another doctor!`,
+      content: `Dr.${consultation?.doctorId?.name} ${consultation?.doctorId?.lastName} has cancelled your consultation .Try Finding another doctor!`,
       receiverModel: "Patient",
-      receiver: consultation.patientId._id,
+      receiver: patient?._id,
     });
 
     await notification.save();
-
-    const fcmToken = await consultation.patientId?.fcmToken;
+    patient.notificationsRecieved.push(notification._id)
+    const fcmToken = await consultation?.patientId?.fcmToken;
 
     const message = {
       notification: {
@@ -425,6 +426,8 @@ router.put("/cancel/:id", async (req, res) => {
       receiver: doctor._id,
     });
     await notification.save();
+
+    doctor.notificationsRecieved.push(notification?._id)
     const fcmToken = await doctor?.fcmToken;
 
     const message = {
