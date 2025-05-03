@@ -72,46 +72,6 @@ app.post("/sendn", async (req, res) => {
   }
 });
 
-app.post("/send-notification", async (req, res) => {
-  const { currentUsername, message, currentUserId, otherUserId, role } =
-    req.body;
-
-  try {
-    let recipient;
-    let recipientRole = role === "patients" ? "doctors" : "patients";
-    if (recipientRole === "doctors") {
-      recipient = await Doctor.findById(otherUserId); 
-    } else {
-      recipient = await Patient.findById(otherUserId); 
-    }
-
-    if (!recipient || !recipient.fcmToken) {
-      return res.status(400).send("FCM token not found for recipient");
-    }
-
-
-    const fcmToken = recipient.fcmToken;
-    const payload = {
-      notification: {
-        title: "New Message",
-        body: `${currentUsername}: ${message}`,
-        sound: "default",
-      },
-      data: {
-        senderId: currentUserId,
-        message: message,
-        role
-      },
-      token: fcmToken,
-      priority: "high",
-    };
-    const response = await messaging().send(payload);
-    res.status(200).json({message:"Notification sent",response});
-  } catch (error) {
-    res.status(500).json({error:"Failed to send notification"+error.message});
-  }
-});
-
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
