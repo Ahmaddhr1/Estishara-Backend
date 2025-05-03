@@ -40,7 +40,8 @@ router.get("/", authenticateToken, async (req, res) => {
         select: "status",
       })
       .populate({ path: "ongoingConsultation", select: "status" })
-      .populate({ path: "acceptedConsultations", select: "status" });
+      .populate({ path: "acceptedConsultations", select: "status" })
+      .populate({ path: "notificationsRecieved", select: "title" });
 
     if (!patients.length) {
       return res.status(404).json({ message: "Patients not found" });
@@ -65,7 +66,8 @@ router.get("/:id", async (req, res) => {
         select: "status",
       })
       .populate({ path: "ongoingConsultation", select: "status" })
-      .populate({ path: "acceptedConsultations", select: "status" });
+      .populate({ path: "acceptedConsultations", select: "status" })
+      .populate({ path: "notificationsRecieved", select: "title" });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -101,7 +103,8 @@ router.put("/:id", authenticateToken, async (req, res) => {
         select: "status",
       })
       .populate({ path: "ongoingConsultation", select: "status" })
-      .populate({ path: "acceptedConsultations", select: "status" });
+      .populate({ path: "acceptedConsultations", select: "status" })
+      .populate({ path: "notificationsRecieved", select: "title" });
     if (!updatedPatient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -182,7 +185,8 @@ router.get("/getrc/:id", async (req, res) => {
             select: "title",
           },
         },
-      });
+      })
+      .populate({ path: "notificationsRecieved", select: "title" });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found!" });
@@ -237,7 +241,8 @@ router.get("/gethc/:id", async (req, res) => {
             select: "title",
           },
         },
-      });
+      })
+      .populate({ path: "notificationsRecieved", select: "title" });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found!" });
@@ -292,7 +297,8 @@ router.get("/getac/:id", async (req, res) => {
             select: "title",
           },
         },
-      });
+      })
+      .populate({ path: "notificationsRecieved", select: "title" });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found!" });
@@ -347,7 +353,8 @@ router.get("/getoc/:id", async (req, res) => {
             select: "title",
           },
         },
-      });
+      })
+      .populate({ path: "notificationsRecieved", select: "title" });
 
     if (!patient) {
       return res.status(404).json({ message: "Patient not found!" });
@@ -391,7 +398,8 @@ router.get("/recommended/:id", authenticateToken, async (req, res) => {
         select: "status",
       })
       .populate({ path: "ongoingConsultation", select: "status" })
-      .populate({ path: "acceptedConsultations", select: "status" });
+      .populate({ path: "acceptedConsultations", select: "status" })
+      .populate({ path: "notificationsRecieved", select: "title" });
 
     if (!patient) {
       return res.status(404).json({ error: "Patient Not found" });

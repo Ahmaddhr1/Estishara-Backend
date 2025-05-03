@@ -163,15 +163,15 @@ router.post("/doctor/register", async (req, res) => {
         select: "status",
       })
       .populate({ path: "ongoingConsultation", select: "status" })
-      .populate({ path: "historyConsultations", select: "status" });
+      .populate({ path: "historyConsultations", select: "status" })
+      .populate({ path: "notificationsRecieved", select: "title" });
 
-      if (fcmToken) {
-        await Doctor.updateOne(
-          { _id: populatedDoctor._id },
-          { $set: { fcmToken } }
-        );
-      }
-  
+    if (fcmToken) {
+      await Doctor.updateOne(
+        { _id: populatedDoctor._id },
+        { $set: { fcmToken } }
+      );
+    }
 
     const speciality = await Speciality.findById(specialityId);
     if (!speciality) {
@@ -231,13 +231,15 @@ router.post("/refresh-token", async (req, res) => {
           .populate({ path: "pendingConsultations", select: "status" })
           .populate({ path: "acceptedConsultations", select: "status" })
           .populate({ path: "ongoingConsultation", select: "status" })
-          .populate({ path: "historyConsultations", select: "status" });
+          .populate({ path: "historyConsultations", select: "status" })
+          .populate({ path: "notificationsRecieved", select: "title" });
       } else {
         user = await Patient.findById(id)
           .populate({ path: "historyConsultations", select: "status" })
           .populate({ path: "requestedConsultations", select: "status" })
           .populate({ path: "ongoingConsultation", select: "status" })
-          .populate({ path: "acceptedConsultations", select: "status" });
+          .populate({ path: "acceptedConsultations", select: "status" })
+          .populate({ path: "notificationsRecieved", select: "title" });
       }
 
       if (!user) {
@@ -318,7 +320,8 @@ router.post("/patient/register", async (req, res) => {
         select: "status",
       })
       .populate({ path: "ongoingConsultation", select: "status" })
-      .populate({ path: "acceptedConsultations", select: "status" });
+      .populate({ path: "acceptedConsultations", select: "status" })
+      .populate({ path: "notificationsRecieved", select: "title" });
 
     if (fcmToken) {
       await Patient.updateOne(
@@ -340,8 +343,6 @@ router.post("/patient/register", async (req, res) => {
       refreshToken,
       role,
     });
-
-    
   } catch (e) {
     res
       .status(400)
@@ -352,9 +353,9 @@ router.post("/patient/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password, fcmToken } = req.body;
-    console.log("Email "+email);
-    console.log("password "+password);
-    console.log("fcmToken "+fcmToken);
+    console.log("Email " + email);
+    console.log("password " + password);
+    console.log("fcmToken " + fcmToken);
     if (!email || !password) {
       return res
         .status(400)
@@ -372,7 +373,8 @@ router.post("/login", async (req, res) => {
       .populate({ path: "historyConsultations", select: "status" })
       .populate({ path: "requestedConsultations", select: "status" })
       .populate({ path: "ongoingConsultation", select: "status" })
-      .populate({ path: "acceptedConsultations", select: "status" });
+      .populate({ path: "acceptedConsultations", select: "status" })
+      .populate({ path: "notificationsRecieved", select: "title" });
     let role = "patient";
 
     // If not patient, check Doctor
@@ -382,7 +384,8 @@ router.post("/login", async (req, res) => {
         .populate({ path: "pendingConsultations", select: "status" })
         .populate({ path: "acceptedConsultations", select: "status" })
         .populate({ path: "ongoingConsultation", select: "status" })
-        .populate({ path: "historyConsultations", select: "status" });
+        .populate({ path: "historyConsultations", select: "status" })
+        .populate({ path: "notificationsRecieved", select: "title" });
       role = "doctor";
     }
 
@@ -407,7 +410,7 @@ router.post("/login", async (req, res) => {
 
     const userObject = user.toObject();
     delete userObject.password;
-    
+
     res.status(200).json({
       message: "Login successful",
       [role]: userObject,
@@ -521,7 +524,8 @@ router.post("/verify-token", async (req, res) => {
             select: "status",
           })
           .populate({ path: "ongoingConsultation", select: "status" })
-          .populate({ path: "historyConsultations", select: "status" });
+          .populate({ path: "historyConsultations", select: "status" })
+          .populate({ path: "notificationsRecieved", select: "title" });
 
         if (!user) {
           return res.status(404).json({ error: "Doctor not found" });
@@ -545,7 +549,8 @@ router.post("/verify-token", async (req, res) => {
             select: "status",
           })
           .populate({ path: "ongoingConsultation", select: "status" })
-          .populate({ path: "acceptedConsultations", select: "status" });
+          .populate({ path: "acceptedConsultations", select: "status" })
+          .populate({ path: "notificationsRecieved", select: "title" });
 
         if (!user) {
           return res.status(404).json({ error: "Patient not found" });
