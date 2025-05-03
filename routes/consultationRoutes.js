@@ -456,6 +456,7 @@ router.put("/cancel/:id", async (req, res) => {
 // router.delete("/all", async (req, res) => {
 //   try {
 //     await Consultation.deleteMany({});
+//     await Notification.deleteMany({});
 
 //     await Doctor.updateMany(
 //       {},
@@ -465,6 +466,7 @@ router.put("/cancel/:id", async (req, res) => {
 //           acceptedConsultations: [],
 //           pendingConsultations: [],
 //           historyConsultations: [],
+//           notificationsRecieved:[]
 //         },
 //       }
 //     );
@@ -477,6 +479,7 @@ router.put("/cancel/:id", async (req, res) => {
 //           requestedConsultations: [],
 //           acceptedConsultations: [],
 //           historyConsultations: [],
+//           notificationsRecieved:[]
 //         },
 //       }
 //     );
