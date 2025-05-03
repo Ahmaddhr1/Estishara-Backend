@@ -13,7 +13,6 @@ dotenv.config();
 const profileID = process.env.PAYTABS_ID;
 const serverKey = process.env.PAYTABS_KEY;
 
-// Create consultation
 router.post("/request", async (req, res) => {
   try {
     const { patientId, doctorId } = req.body;
@@ -41,7 +40,7 @@ router.post("/request", async (req, res) => {
       receiverModel: "Doctor",
       receiver: doctor._id,
     });
-
+    await notification.save();
     const fcmToken = doctor?.fcmToken;
 
     const message = {
@@ -63,7 +62,9 @@ router.post("/request", async (req, res) => {
 router.delete("/cons/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const consultation = await Consultation.findById(id).populate("doctorId").populate("patientId");
+    const consultation = await Consultation.findById(id)
+      .populate("doctorId")
+      .populate("patientId");
     if (!consultation) {
       return res.status(404).json({ message: "Consultation not found!" });
     }
@@ -74,8 +75,11 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
       });
     }
 
-    if(consultation.status !== "requested" || consultation.status !== "accepted") {
-      return res.status(400).json({message:"You can't cancel it!"})
+    if (
+      consultation.status !== "requested" ||
+      consultation.status !== "accepted"
+    ) {
+      return res.status(400).json({ message: "You can't cancel it!" });
     }
 
     await Patient.findByIdAndUpdate(consultation.patientId, {
@@ -220,6 +224,10 @@ router.post("/paytabs/callback", async (req, res) => {
     const platformCut = fullAmount * 0.2;
     const paidToDoctor = fullAmount - platformCut;
 
+    if (consultation.status === "paid") {
+      return res.status(200).json({ message: "Payment already processed" });
+    }
+
     consultation.status = "paid";
     consultation.paymentDetails = {
       transactionRef: tran_ref,
@@ -228,7 +236,10 @@ router.post("/paytabs/callback", async (req, res) => {
       paidToDoctor,
     };
 
-    doctor.acceptedConsultations.push(consultation._id);
+    if (!doctor.acceptedConsultations.includes(consultation._id)) {
+      doctor.acceptedConsultations.push(consultation._id);
+    }
+
     doctor.pendingConsultations = doctor.pendingConsultations.filter(
       (id) => id.toString() !== consultation._id.toString()
     );
@@ -236,20 +247,31 @@ router.post("/paytabs/callback", async (req, res) => {
     patient.requestedConsultations = patient.requestedConsultations.filter(
       (id) => id.toString() !== consultation._id.toString()
     );
-    patient.acceptedConsultations.push(consultation._id);
+
+    if (!patient.acceptedConsultations.includes(consultation._id)) {
+      patient.acceptedConsultations.push(consultation._id);
+    }
 
     await consultation.save();
     await doctor.save();
     await patient.save();
 
-    const notification = new Notification({
-      title: "Payment Sucessfull",
-      content: `Mr.${patient.name} ${patient.lastName} has paid for your consultation.Please start it now!`,
-      receiverModel: "Doctor",
+    const existingNotification = await Notification.findOne({
+      consultationId: consultation._id,
       receiver: doctor._id,
     });
 
-    await notification.save();
+    if (!existingNotification) {
+      const notification = new Notification({
+        title: "Payment Successful",
+        content: `Mr. ${patient.name} ${patient.lastName} has paid for your consultation. Please start it now!`,
+        receiverModel: "Doctor",
+        receiver: doctor._id,
+        consultationId: consultation._id,
+      });
+
+      await notification.save();
+    }
 
     const fcmToken = await doctor?.fcmToken;
 
@@ -394,6 +416,7 @@ router.put("/cancel/:id", async (req, res) => {
       receiverModel: "Doctor",
       receiver: doctor._id,
     });
+    await notification.save();
     const fcmToken = await doctor?.fcmToken;
 
     const message = {

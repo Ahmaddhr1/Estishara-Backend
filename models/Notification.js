@@ -21,6 +21,11 @@ const notificationSchema = new mongoose.Schema(
       required: true,
       enum: ["Patient", "Doctor"],
     },
+    consultationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Consultation",
+      default: "",
+    },
   },
   { timestamps: true }
 );

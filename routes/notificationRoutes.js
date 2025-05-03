@@ -8,7 +8,7 @@ router.get("/:id", async (req, res) => {
   try {
     const notifications = await Notification.find({
       receiver: receiverId,
-    }).populate("receiver"); // auto uses receiverModel
+    }).populate("receiver");
 
     if (!notifications.length) {
       return res

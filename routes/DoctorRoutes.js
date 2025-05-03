@@ -289,7 +289,7 @@ router.put("/approve/:id", authenticateToken, async (req, res) => {
       receiverModel: "Doctor",
       receiver: doctor._id,
     });
-
+    await notification.save();
     const fcmToken = doctor?.fcmToken;
 
     const message = {
@@ -576,7 +576,7 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
       receiverModel: "Patient",
       receiver: consultation.patientId?._id,
     });
-
+    await notification.save();
     const fcmToken = consultation.patientId?.fcmToken;
 
     const message = {
