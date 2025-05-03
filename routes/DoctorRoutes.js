@@ -597,7 +597,7 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
     patient.notificationsRecieved.push(notification._id);
     await patient.save();
 
-    const fcmToken = doctor?.fcmToken;
+    const fcmToken = patient?.fcmToken;
     console.log("fcmToken:" + fcmToken);
     const message = {
       notification: {
