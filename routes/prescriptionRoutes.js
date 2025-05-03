@@ -9,7 +9,7 @@ router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Check if the user is a Doctor or Patient
+    
     const doctor = await Doctor.findById(id).populate("prescriptionsSent");
     const patient = await Patient.findById(id).populate("prescriptionsRecieved");
 
