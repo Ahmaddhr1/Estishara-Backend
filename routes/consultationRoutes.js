@@ -6,7 +6,7 @@ const Patient = require("../models/Patient");
 const Doctor = require("../models/Doctor");
 const authenticateToken = require("../utils/middleware");
 const messaging = require("../config/firebaseConfig");
-const Notification = require("../models/Notification");
+const Notification = require("../models/Notification.js");
 const router = express.Router();
 dotenv.config();
 
@@ -25,6 +25,7 @@ router.post("/request", async (req, res) => {
     await consultation.save();
     const patient = await Patient.findById(patientId);
     const doctor = await Doctor.findById(doctorId);
+
     if (patient) {
       patient.requestedConsultations.push(consultation._id);
       await patient.save();
@@ -40,7 +41,12 @@ router.post("/request", async (req, res) => {
       receiverModel: "Doctor",
       receiver: doctor._id,
     });
+
     await notification.save();
+
+    doctor.notificationsRecieved.push(notification._id);
+    await doctor.save();
+
     const fcmToken = doctor?.fcmToken;
 
     const message = {
@@ -90,7 +96,7 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
       $pull: { pendingConsultations: consultation._id },
     });
 
-    const notification = new Notification({
+    const notification = await new Notification({
       title: "Consultation Cancelled",
       content: `Dr.${consultation.doctorId.name} ${consultation.doctorId.lastName} has cancelled your consultation .Try Finding another doctor!`,
       receiverModel: "Patient",
@@ -271,7 +277,8 @@ router.post("/paytabs/callback", async (req, res) => {
       });
 
       await notification.save();
-
+      doctor.notificationsRecieved.push(notification._id);
+      await doctor.save();
       const fcmToken = await doctor?.fcmToken;
 
       const message = {
@@ -284,7 +291,6 @@ router.post("/paytabs/callback", async (req, res) => {
       await messaging?.send(message);
     }
 
- 
     res.status(200).json({
       message: "Payment confirmed, consultation updated and notification sent!",
     });

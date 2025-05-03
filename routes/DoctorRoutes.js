@@ -577,6 +577,8 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
       receiver: consultation.patientId?._id,
     });
     await notification.save();
+    consultation.patientId.notificationsRecieved.push(notification._id);
+    await consultation.patientId.save();
     const fcmToken = consultation.patientId?.fcmToken;
 
     const message = {
