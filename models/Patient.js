@@ -128,6 +128,11 @@ const patientSchema = new Schema(
     fcmToken:{
       type:String,
       default:""
+    },
+    prescriptionsRecieved:{
+      type:[Schema.Types.ObjectId],
+      ref:"Prescription",
+      default:[]
     }
   },
   { timestamps: true }

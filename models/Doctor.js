@@ -137,7 +137,12 @@ const doctorSchema = new Schema(
     },
     fcmToken: {
       type: String,
-      default:"",
+      default: "",
+    },
+    prescriptionsSent: {
+      type: [Schema.Types.ObjectId],
+      ref: "Prescription",
+      default: [],
     },
   },
   { timestamps: true }
