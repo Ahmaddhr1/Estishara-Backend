@@ -107,7 +107,7 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
 
     await notification.save();
     patient.notificationsRecieved.push(notification._id)
-    const fcmToken = await consultation?.patientId?.fcmToken;
+    const fcmToken = patient?.fcmToken;
 
     const message = {
       notification: {
