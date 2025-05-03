@@ -271,18 +271,20 @@ router.post("/paytabs/callback", async (req, res) => {
       });
 
       await notification.save();
+
+      const fcmToken = await doctor?.fcmToken;
+
+      const message = {
+        notification: {
+          title: notification.title,
+          body: notification.content,
+        },
+        token: fcmToken,
+      };
+      await messaging?.send(message);
     }
 
-    const fcmToken = await doctor?.fcmToken;
-
-    const message = {
-      notification: {
-        title: notification.title,
-        body: notification.content,
-      },
-      token: fcmToken,
-    };
-    await messaging?.send(message);
+ 
     res.status(200).json({
       message: "Payment confirmed, consultation updated and notification sent!",
     });

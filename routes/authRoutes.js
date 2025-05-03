@@ -333,15 +333,16 @@ router.post("/patient/register", async (req, res) => {
     delete patientObject.password;
 
     const role = "patient";
-
+    console.log("FCM TOKEN: "+fcmToken)
     res.status(201).json({
       message: "Patient registered successfully",
       patient: patientObject,
       accessToken,
       refreshToken,
       role,
-      
     });
+
+    
   } catch (e) {
     res
       .status(400)
