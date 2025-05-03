@@ -263,6 +263,9 @@ router.delete("/:id", authenticateToken, async (req, res) => {
         $pull: { doctors: doctor._id },
       });
     }
+
+    await Notification.deleteMany({ doctor: doctor._id });
+
     await Patient.updateMany(
       { recommendedDoctors: doctor._id },
       { $pull: { recommendedDoctors: doctor._id } }
@@ -604,10 +607,6 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
         title: notification.title,
         body: notification.content,
       },
-      // data: {
-      //   senderId: "Me",
-      //   message: "Some message content",
-      // },
       token: fcmToken,
     };
     const response = await messaging?.send(message);

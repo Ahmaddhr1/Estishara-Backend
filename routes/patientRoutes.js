@@ -3,6 +3,7 @@ const router = express.Router();
 const Patient = require("../models/Patient");
 const authenticateToken = require("../utils/middleware");
 const Doctor = require("../models/Doctor");
+const Notification = require("../models/Notification");
 // Utility functions
 function sanitizePatient(patient) {
   const pat = patient.toObject();
@@ -135,6 +136,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
       { recommendedBy: patient._id },
       { $pull: { recommendedBy: patient._id } }
     );
+    await Notification.deleteMany({ doctor: doctor._id });
 
     await Patient.findByIdAndDelete(req.params.id);
 

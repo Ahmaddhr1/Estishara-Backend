@@ -48,7 +48,6 @@ router.post("/request", async (req, res) => {
     await doctor.save();
 
     const fcmToken = doctor?.fcmToken;
-    console.log("FCM TOKEN:"+fcmToken)
 
     const message = {
       notification: {
@@ -56,7 +55,6 @@ router.post("/request", async (req, res) => {
         body: notification.content,
       },
       token: fcmToken,
-      priority:"high"
     };
     const response = await messaging?.send(message);
 
