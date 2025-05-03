@@ -3,6 +3,7 @@ const router = express.Router();
 const Notification = require("../models/Notification");
 const Patient = require("../models/Patient");
 const Doctor = require("../models/Doctor");
+const messaging = require("../config/firebaseConfig.js");
 
 router.get("/:id", async (req, res) => {
   const receiverId = req.params.id;
@@ -98,8 +99,10 @@ router.post("/send-notification", async (req, res) => {
     let recipientRole = role === "patients" ? "doctors" : "patients";
     if (recipientRole === "doctors") {
       recipient = await Doctor.findById(otherUserId);
+      console.log(recipient)
     } else {
       recipient = await Patient.findById(otherUserId);
+      console.log(recipient)
     }
 
     if (!recipient || !recipient.fcmToken) {
@@ -107,11 +110,11 @@ router.post("/send-notification", async (req, res) => {
     }
 
     const fcmToken = recipient.fcmToken;
+    console.log("FCM TOKEN:",fcmToken)
     const payload = {
       notification: {
         title: "New Message",
         body: `${currentUsername}: ${message}`,
-        sound: "default",
       },
       data: {
         senderId: currentUserId,
@@ -119,14 +122,13 @@ router.post("/send-notification", async (req, res) => {
         role,
       },
       token: fcmToken,
-      priority: "high",
     };
-    const response = await messaging().send(payload);
+    const response = await messaging?.send(payload);
     res.status(200).json({ message: "Notification sent", response });
   } catch (error) {
     res
       .status(500)
-      .json({ error: "Failed to send notification" + error.message });
+      .json({ error: "Failed to send notification " + error.message });
   }
 });
 module.exports = router;

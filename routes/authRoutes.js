@@ -339,6 +339,7 @@ router.post("/patient/register", async (req, res) => {
       accessToken,
       refreshToken,
       role,
+      
     });
   } catch (e) {
     res
@@ -410,6 +411,7 @@ router.post("/login", async (req, res) => {
       accessToken,
       refreshToken,
       role,
+      fcmToken
     });
   } catch (e) {
     res.status(500).json({ error: e.message, message: "Login failed!" });
