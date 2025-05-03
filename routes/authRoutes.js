@@ -301,6 +301,7 @@ router.post("/patient/register", async (req, res) => {
       phoneNumber,
       age,
       password: hashedPassword,
+      fcmToken,
     });
 
     // First save the patient
