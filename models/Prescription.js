@@ -7,6 +7,10 @@ const prescriptionSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Patient",
     },
+    doctor:{
+        type: Schema.Types.ObjectId,
+        ref: "Doctor",
+    },
     medicationName: String,
     strength: String,
     form: String,

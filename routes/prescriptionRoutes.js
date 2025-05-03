@@ -4,13 +4,14 @@ const Patient = require("../models/Patient");
 const Prescription = require("../models/Prescription");
 const router = express.Router();
 
+// Route to get all prescriptions sent (for Doctor) or received (for Patient)
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
+
   try {
+    // Check if the user is a Doctor or Patient
     const doctor = await Doctor.findById(id).populate("prescriptionsSent");
-    const patient = await Patient.findById(id).populate(
-      "prescriptionsReceived"
-    );
+    const patient = await Patient.findById(id).populate("prescriptionsRecieved");
 
     if (doctor) {
       return res.status(200).json({
@@ -22,9 +23,10 @@ router.get("/:id", async (req, res) => {
     if (patient) {
       return res.status(200).json({
         message: "Patient found",
-        prescriptionsReceived: patient.prescriptionsRecieved,
+        prescriptionsRecieved: patient.prescriptionsRecieved,
       });
     }
+
     return res.status(404).json({ message: "User not found" });
   } catch (error) {
     console.error("Error fetching prescriptions:", error);
@@ -32,6 +34,31 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Route to get detailed information about a specific prescription
+router.get("/prescription/:prescriptionId", async (req, res) => {
+  const { prescriptionId } = req.params;
+
+  try {
+    // Find the prescription by ID and populate related fields (Doctor and Patient)
+    const prescription = await Prescription.findById(prescriptionId)
+      .populate("patient", "name email") // Populate patient details (name and email)
+      .populate("doctor", "name email"); // Populate doctor details (name and email)
+
+    if (!prescription) {
+      return res.status(404).json({ message: "Prescription not found" });
+    }
+
+    return res.status(200).json({
+      message: "Prescription details",
+      prescription,
+    });
+  } catch (error) {
+    console.error("Error fetching prescription details:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Route to create a new prescription
 router.post("/", async (req, res) => {
   try {
     const {
@@ -58,8 +85,10 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Create the new prescription document
     const newPrescription = new Prescription({
       patient: patientId,
+      doctor: doctorId,
       medicationName,
       strength,
       form,
@@ -67,7 +96,6 @@ router.post("/", async (req, res) => {
       quantity,
       diagnosis,
     });
-
     await newPrescription.save();
 
     const patient = await Patient.findById(patientId);
