@@ -556,6 +556,7 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
     const consultation = await Consultation.findById(id)
       .populate("doctorId")
       .populate("patientId");
+    const patient = await Patient.findById(consultation.patientId)
     const reqUserId = req.user?.id;
 
     if (reqUserId != consultation.doctorId._id) {
@@ -574,11 +575,13 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
       title: "Consultation Accepted",
       content: `Dr.${consultation.doctorId.name} ${consultation.doctorId.lastName} has accepted your consultation with you. Pay and continue!`,
       receiverModel: "Patient",
-      receiver: consultation.patientId?._id,
+      receiver: patient._id,
     });
     await notification.save();
-    consultation.patientId.notificationsRecieved.push(notification._id);
-    await consultation.patientId.save();
+
+    patient.notificationsRecieved.push(notification._id);
+    await patient.save();
+
     const fcmToken = consultation.patientId?.fcmToken;
 
     const message = {

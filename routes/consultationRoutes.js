@@ -61,7 +61,7 @@ router.post("/request", async (req, res) => {
     res.status(201).json({ message: "Consultation created", consultation });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error creating consultation" });
+    res.status(500).json({ message: "Error creating consultation"+err.message });
   }
 });
 
@@ -96,7 +96,7 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
       $pull: { pendingConsultations: consultation._id },
     });
 
-    const notification = await new Notification({
+    const notification = new Notification({
       title: "Consultation Cancelled",
       content: `Dr.${consultation.doctorId.name} ${consultation.doctorId.lastName} has cancelled your consultation .Try Finding another doctor!`,
       receiverModel: "Patient",

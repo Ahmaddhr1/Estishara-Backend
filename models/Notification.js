@@ -24,7 +24,6 @@ const notificationSchema = new mongoose.Schema(
     consultationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Consultation",
-      default: "",
     },
   },
   { timestamps: true }
