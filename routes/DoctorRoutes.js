@@ -569,7 +569,6 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
     const consultation = await Consultation.findById(id).populate("doctorId");
     const patient = await Patient.findById(consultation?.patientId);
     const doctor = await Doctor.findById(consultation?.doctorId);
-    console.log(patient);
     const reqUserId = req.user?.id;
 
     if (reqUserId != consultation.doctorId._id) {

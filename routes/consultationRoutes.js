@@ -338,6 +338,7 @@ router.put("/start/:id", async (req, res) => {
       { _id: patient._id },
       { $pull: { acceptedConsultations: consultation._id } }
     );
+    
 
     doctor.ongoingConsultation = consultation._id;
     patient.ongoingConsultation = consultation._id;
@@ -347,6 +348,16 @@ router.put("/start/:id", async (req, res) => {
 
     consultation.status = "ongoing";
     await consultation.save();
+
+    const fcmToken= patient?.fcmToken
+    const message = {
+      notification: {
+        title: "Consultation Started!",
+        body: "You can ask and make call now!",
+      },
+      token: fcmToken,
+    };
+    await messaging?.send(message);
 
     return res
       .status(200)
