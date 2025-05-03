@@ -333,7 +333,6 @@ router.post("/patient/register", async (req, res) => {
     delete patientObject.password;
 
     const role = "patient";
-    console.log("FCM TOKEN: "+fcmToken)
     res.status(201).json({
       message: "Patient registered successfully",
       patient: patientObject,
@@ -353,7 +352,9 @@ router.post("/patient/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password, fcmToken } = req.body;
-
+    console.log("Email "+email);
+    console.log("password "+password);
+    console.log("fcmToken "+fcmToken);
     if (!email || !password) {
       return res
         .status(400)
@@ -406,7 +407,7 @@ router.post("/login", async (req, res) => {
 
     const userObject = user.toObject();
     delete userObject.password;
-
+    
     res.status(200).json({
       message: "Login successful",
       [role]: userObject,
