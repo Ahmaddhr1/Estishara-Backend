@@ -91,15 +91,17 @@ router.post("/", async (req, res) => {
 });
 
 router.post("/send-notification", async (req, res) => {
-  const {message, currentUserId, otherUserId, role } = req.body;
+  const { message, currentUserId, otherUserId, role } = req.body;
 
-  console.log("Message: ",message)
+  console.log("Message:", message);
+  console.log("Current User ID:", currentUserId);
+  console.log("Other User ID:", otherUserId);
 
   try {
     let recipient;
     let recipientRole = role === "patients" ? "doctors" : "patients";
-    console.log("Message: ",message)
     console.log("Starting to find the recipient...");
+
     if (recipientRole === "doctors") {
       recipient = await Doctor.findById(otherUserId);
       console.log("Recipient found (Doctor):", recipient);
@@ -107,6 +109,8 @@ router.post("/send-notification", async (req, res) => {
       recipient = await Patient.findById(otherUserId);
       console.log("Recipient found (Patient):", recipient);
     }
+
+
     if (!recipient || !recipient.fcmToken) {
       console.error("FCM token not found for recipient");
       return res.status(400).send("FCM token not found for recipient");
@@ -115,15 +119,31 @@ router.post("/send-notification", async (req, res) => {
     const fcmToken = recipient.fcmToken;
     console.log("FCM Token:", fcmToken);
 
+
+    let sender;
+    if (role === "patients") {
+      sender = await Patient.findById(currentUserId);
+    } else {
+      sender = await Doctor.findById(currentUserId);
+    }
+
+    if (!sender || !sender.name || !sender.lastName) {
+      console.error("Sender details not found");
+      return res.status(400).send("Sender details not found");
+    }
+
+    console.log("Sender Name:", sender.name, sender.lastName);
+
     const payload = {
       notification: {
         title: "New Message",
-        body: `${message}`,
+        body: `${sender.name} ${sender.lastName}: ${message}`, 
       },
       token: fcmToken,
     };
-    console.log(payload)
+    console.log("Payload:", payload);
 
+    // Step 5: Send the notification via Firebase
     console.log("Sending the notification...");
     const response = await messaging?.send(payload);
     console.log("Notification sent successfully:", response);
@@ -131,7 +151,9 @@ router.post("/send-notification", async (req, res) => {
     res.status(200).json({ message: "Notification sent", response });
   } catch (error) {
     console.error("Error in send-notification:", error.message);
-    res.status(500).json({ error: "Failed to send notification " + error.message });
+    res
+      .status(500)
+      .json({ error: "Failed to send notification " + error.message });
   }
 });
 module.exports = router;
