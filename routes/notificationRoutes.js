@@ -93,6 +93,8 @@ router.post("/", async (req, res) => {
 router.post("/send-notification", async (req, res) => {
   const { currentUsername, message, currentUserId, otherUserId, role } = req.body;
 
+  console.log("Message:",message)
+
   try {
     let recipient;
     let recipientRole = role === "patients" ? "doctors" : "patients";
