@@ -91,7 +91,7 @@ router.post("/", async (req, res) => {
 });
 
 router.post("/send-notification", async (req, res) => {
-  const { currentUsername, message, currentUserId, otherUserId, role } = req.body;
+  const {message, currentUserId, otherUserId, role } = req.body;
 
   console.log("Message: ",message)
 
@@ -118,7 +118,7 @@ router.post("/send-notification", async (req, res) => {
     const payload = {
       notification: {
         title: "New Message",
-        body: `${currentUsername}: ${message}`,
+        body: `${recipient.name} ${recipient.lastName} : ${message}`,
       },
       token: fcmToken,
     };
