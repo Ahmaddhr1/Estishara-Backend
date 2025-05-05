@@ -99,10 +99,10 @@ router.post("/send-notification", async (req, res) => {
     let recipientRole = role === "patients" ? "doctors" : "patients";
     if (recipientRole === "doctors") {
       recipient = await Doctor.findById(otherUserId);
-      console.log(recipient)
+      console.log(recipient);
     } else {
       recipient = await Patient.findById(otherUserId);
-      console.log(recipient)
+      console.log(recipient);
     }
 
     if (!recipient || !recipient.fcmToken) {
@@ -110,7 +110,8 @@ router.post("/send-notification", async (req, res) => {
     }
 
     const fcmToken = recipient.fcmToken;
-    console.log("FCM TOKEN:",fcmToken)
+    console.log("FCM TOKEN:", fcmToken);
+
     const payload = {
       notification: {
         title: "New Message",
