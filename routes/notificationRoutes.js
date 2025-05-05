@@ -102,7 +102,7 @@ router.post("/send-notification", async (req, res) => {
     let recipientRole = role === "patients" ? "doctors" : "patients";
     console.log("Starting to find the recipient...");
 
-    if (recipientRole === "doctors") {
+    if (recipientRole === "patients") {
       recipient = await Doctor.findById(otherUserId);
       console.log("Recipient found (Doctor):", recipient);
     } else {
