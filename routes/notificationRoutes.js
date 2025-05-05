@@ -127,6 +127,7 @@ router.post("/send-notification", async (req, res) => {
     const response = await messaging?.send(payload);
     res.status(200).json({ message: "Notification sent", response });
   } catch (error) {
+    console.log("Errrorrrr:"+error.message)
     res
       .status(500)
       .json({ error: "Failed to send notification " + error.message });
