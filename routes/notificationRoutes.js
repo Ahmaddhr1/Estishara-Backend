@@ -93,7 +93,9 @@ router.post("/", async (req, res) => {
 router.post("/send-notification", async (req, res) => {
   const {message, currentUserId, otherUserId, role } = req.body;
 
-  console.log("Message: ",message)
+  console.log("Message: ",message);
+  console.log("current" ,currentUserId);
+  console.log("other" ,otherUserId);
 
   try {
     let recipient;
@@ -101,10 +103,10 @@ router.post("/send-notification", async (req, res) => {
     console.log("Message: ",message)
     console.log("Starting to find the recipient...");
     if (recipientRole === "doctors") {
-      recipient = await Doctor.findById(currentUserId);
+      recipient = await Doctor.findById(otherUserId);
       console.log("Recipient found (Doctor):", recipient);
     } else {
-      recipient = await Patient.findById(currentUserId);
+      recipient = await Patient.findById(otherUserId);
       console.log("Recipient found (Patient):", recipient);
     }
     if (!recipient || !recipient.fcmToken) {
