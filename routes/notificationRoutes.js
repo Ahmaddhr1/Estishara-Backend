@@ -120,11 +120,6 @@ router.post("/send-notification", async (req, res) => {
         title: "New Message",
         body: `${currentUsername}: ${message}`,
       },
-      data: {
-        senderId: currentUserId,
-        message: message,
-        role,
-      },
       token: fcmToken,
     };
 
