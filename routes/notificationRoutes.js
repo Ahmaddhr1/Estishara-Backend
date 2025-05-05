@@ -145,7 +145,7 @@ router.post("/send-notification", async (req, res) => {
 
 
     console.log("Sending the notification...");
-    const response = await messaging?.sendToDevice(payload);
+    const response = await messaging()?.sendToDevice(payload);
     console.log("Notification sent successfully:", response);
 
     res.status(200).json({ message: "Notification sent", response });
