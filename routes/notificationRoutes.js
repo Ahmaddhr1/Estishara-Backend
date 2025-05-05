@@ -122,6 +122,7 @@ router.post("/send-notification", async (req, res) => {
       },
       token: fcmToken,
     };
+    console.log(payload)
 
     console.log("Sending the notification...");
     const response = await messaging?.send(payload);
