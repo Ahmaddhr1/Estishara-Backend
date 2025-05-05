@@ -108,7 +108,7 @@ router.post("/send-notification", async (req, res) => {
     if (!recipient || !recipient.fcmToken) {
       return res.status(400).send("FCM token not found for recipient");
     }
-
+    console.log("Errrorrrr1:")
     const fcmToken = recipient.fcmToken;
     console.log("FCM TOKEN:", fcmToken);
 
@@ -124,10 +124,12 @@ router.post("/send-notification", async (req, res) => {
       },
       token: fcmToken,
     };
+    console.log("Errrorrrr2:")
     const response = await messaging?.send(payload);
+    console.log("Errrorrrr3:")
     res.status(200).json({ message: "Notification sent", response });
   } catch (error) {
-    console.log("Errrorrrr:"+error.message)
+    
     res
       .status(500)
       .json({ error: "Failed to send notification " + error.message });
