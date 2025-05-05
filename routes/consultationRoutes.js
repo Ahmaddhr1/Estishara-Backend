@@ -462,44 +462,44 @@ router.put("/cancel/:id", async (req, res) => {
   }
 });
 
-// router.delete("/all", async (req, res) => {
-//   try {
-//     await Consultation.deleteMany({});
-//     await Notification.deleteMany({});
+router.delete("/all", async (req, res) => {
+  try {
+    await Consultation.deleteMany({});
+    await Notification.deleteMany({});
 
-//     await Doctor.updateMany(
-//       {},
-//       {
-//         $set: {
-//           ongoingConsultation: null,
-//           acceptedConsultations: [],
-//           pendingConsultations: [],
-//           historyConsultations: [],
-//           notificationsRecieved:[]
-//         },
-//       }
-//     );
+    await Doctor.updateMany(
+      {},
+      {
+        $set: {
+          ongoingConsultation: null,
+          acceptedConsultations: [],
+          pendingConsultations: [],
+          historyConsultations: [],
+          notificationsRecieved:[]
+        },
+      }
+    );
 
-//     await Patient.updateMany(
-//       {},
-//       {
-//         $set: {
-//           ongoingConsultation: null,
-//           requestedConsultations: [],
-//           acceptedConsultations: [],
-//           historyConsultations: [],
-//           notificationsRecieved:[]
-//         },
-//       }
-//     );
+    await Patient.updateMany(
+      {},
+      {
+        $set: {
+          ongoingConsultation: null,
+          requestedConsultations: [],
+          acceptedConsultations: [],
+          historyConsultations: [],
+          notificationsRecieved:[]
+        },
+      }
+    );
 
-//     return res
-//       .status(200)
-//       .json({ message: "All consultations deleted successfully!" });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ error: "Internal server error" });
-//   }
-// });
+    return res
+      .status(200)
+      .json({ message: "All consultations deleted successfully!" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 module.exports = router;

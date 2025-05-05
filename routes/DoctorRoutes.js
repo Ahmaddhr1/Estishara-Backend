@@ -566,7 +566,7 @@ router.get("/getoc/:id", async (req, res) => {
 router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const consultation = await Consultation.findById(id).populate("doctorId");
+    const consultation = await Consultation.findById(id);
     const patient = await Patient.findById(consultation?.patientId);
     const doctor = await Doctor.findById(consultation?.doctorId);
     const reqUserId = req.user?.id;
@@ -603,8 +603,8 @@ router.put("/acceptCons/:id", authenticateToken, async (req, res) => {
     console.log("fcmToken:" + fcmToken);
     const message = {
       notification: {
-        title: notification.title,
-        body: notification.content,
+        title: notification?.title,
+        body: notification?.content,
       },
       token: fcmToken,
     };
