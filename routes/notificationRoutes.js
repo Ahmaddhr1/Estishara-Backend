@@ -91,7 +91,7 @@ router.post("/", async (req, res) => {
 });
 
 router.post("/send-notification", async (req, res) => {
-  const { message, currentUserId, otherUserId, role } = req.body;
+  const { message, currentUserId, otherUserId } = req.body;
 
   console.log("Message:", message);
   console.log("Current User ID:", currentUserId);
@@ -99,18 +99,18 @@ router.post("/send-notification", async (req, res) => {
 
   try {
     let recipient;
-    let recipientRole = role === "patients" ? "doctors" : "patients";
-    console.log("Starting to find the recipient...");
 
-    if (recipientRole === "patients") {
-      recipient = await Doctor.findById(otherUserId);
-      console.log("Recipient found (Doctor):", recipient);
-    } else {
+    // First, attempt to find the recipient as a Doctor
+    recipient = await Doctor.findById(otherUserId);
+    console.log("Recipient found (Doctor):", recipient);
+
+    // If not found as a Doctor, attempt to find the recipient as a Patient
+    if (!recipient) {
       recipient = await Patient.findById(otherUserId);
       console.log("Recipient found (Patient):", recipient);
     }
 
-
+    // If no recipient is found or the FCM token is missing, return an error
     if (!recipient || !recipient.fcmToken) {
       console.error("FCM token not found for recipient");
       return res.status(400).send("FCM token not found for recipient");
@@ -119,14 +119,15 @@ router.post("/send-notification", async (req, res) => {
     const fcmToken = recipient.fcmToken;
     console.log("FCM Token:", fcmToken);
 
-
+    // Get the sender's details (currentUserId)
     let sender;
-    if (role === "patients") {
-      sender = await Patient.findById(currentUserId);
-    } else {
-      sender = await Doctor.findById(currentUserId);
+    if (recipient instanceof Patient) {
+      sender = await Doctor.findById(currentUserId); // If recipient is a patient, sender is a doctor
+    } else if (recipient instanceof Doctor) {
+      sender = await Patient.findById(currentUserId); // If recipient is a doctor, sender is a patient
     }
 
+    // If sender details are missing, return an error
     if (!sender || !sender.name || !sender.lastName) {
       console.error("Sender details not found");
       return res.status(400).send("Sender details not found");
@@ -134,16 +135,17 @@ router.post("/send-notification", async (req, res) => {
 
     console.log("Sender Name:", sender.name, sender.lastName);
 
+    // Prepare the notification payload
     const payload = {
       notification: {
         title: "New Message",
-        body: `${sender.name} ${sender.lastName}: ${message}`, 
+        body: `${sender.name} ${sender.lastName}: ${message}`, // Include sender's name
       },
       token: fcmToken,
     };
     console.log("Payload:", payload);
 
-    // Step 5: Send the notification via Firebase
+    // Send the notification via Firebase
     console.log("Sending the notification...");
     const response = await messaging?.send(payload);
     console.log("Notification sent successfully:", response);
