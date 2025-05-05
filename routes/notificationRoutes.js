@@ -98,7 +98,6 @@ router.post("/send-notification", async (req, res) => {
   console.log("Other User ID:", otherUserId);
 
   try {
-    // Step 1: Determine the recipient based on role
     let recipient;
     let recipientRole = role === "patients" ? "doctors" : "patients";
     console.log("Starting to find the recipient...");
@@ -111,7 +110,7 @@ router.post("/send-notification", async (req, res) => {
       console.log("Recipient found (Patient):", recipient);
     }
 
-    // Step 2: Handle missing recipient or missing FCM token
+
     if (!recipient || !recipient.fcmToken) {
       console.error("FCM token not found for recipient");
       return res.status(400).send("FCM token not found for recipient");
@@ -120,7 +119,7 @@ router.post("/send-notification", async (req, res) => {
     const fcmToken = recipient.fcmToken;
     console.log("FCM Token:", fcmToken);
 
-    // Step 3: Get sender's name (assuming 'currentUserId' is for the sender)
+
     let sender;
     if (role === "patients") {
       sender = await Patient.findById(currentUserId);
@@ -135,19 +134,18 @@ router.post("/send-notification", async (req, res) => {
 
     console.log("Sender Name:", sender.name, sender.lastName);
 
-    // Step 4: Prepare payload for the notification
     const payload = {
       notification: {
         title: "New Message",
-        body: `${sender.name} ${sender.lastName}: ${message}`, // Include sender's name
+        body: `${sender.name} ${sender.lastName}: ${message}`,
       },
       token: fcmToken,
     };
     console.log("Payload:", payload);
 
-    // Step 5: Send the notification via Firebase
+
     console.log("Sending the notification...");
-    const response = await messaging?.send(payload);
+    const response = await messaging?.sendToDevice(payload);
     console.log("Notification sent successfully:", response);
 
     res.status(200).json({ message: "Notification sent", response });
