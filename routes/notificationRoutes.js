@@ -91,26 +91,27 @@ router.post("/", async (req, res) => {
 });
 
 router.post("/send-notification", async (req, res) => {
-  const { currentUsername, message, currentUserId, otherUserId, role } =
-    req.body;
+  const { currentUsername, message, currentUserId, otherUserId, role } = req.body;
 
   try {
     let recipient;
     let recipientRole = role === "patients" ? "doctors" : "patients";
+
+    console.log("Starting to find the recipient...");
     if (recipientRole === "doctors") {
       recipient = await Doctor.findById(otherUserId);
-      console.log(recipient);
+      console.log("Recipient found (Doctor):", recipient);
     } else {
       recipient = await Patient.findById(otherUserId);
-      console.log(recipient);
+      console.log("Recipient found (Patient):", recipient);
     }
-
     if (!recipient || !recipient.fcmToken) {
+      console.error("FCM token not found for recipient");
       return res.status(400).send("FCM token not found for recipient");
     }
-    console.log("Errrorrrr1:")
+
     const fcmToken = recipient.fcmToken;
-    console.log("FCM TOKEN:", fcmToken);
+    console.log("FCM Token:", fcmToken);
 
     const payload = {
       notification: {
@@ -124,15 +125,15 @@ router.post("/send-notification", async (req, res) => {
       },
       token: fcmToken,
     };
-    console.log("Errrorrrr2:")
+
+    console.log("Sending the notification...");
     const response = await messaging?.send(payload);
-    console.log("Errrorrrr3:")
+    console.log("Notification sent successfully:", response);
+
     res.status(200).json({ message: "Notification sent", response });
   } catch (error) {
-    
-    res
-      .status(500)
-      .json({ error: "Failed to send notification " + error.message });
+    console.error("Error in send-notification:", error.message);
+    res.status(500).json({ error: "Failed to send notification " + error.message });
   }
 });
 module.exports = router;
