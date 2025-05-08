@@ -136,7 +136,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
       { recommendedBy: patient._id },
       { $pull: { recommendedBy: patient._id } }
     );
-    await Notification.deleteMany({ doctor: doctor._id });
+    await Notification.deleteMany({ patient: patient._id });
 
     await Patient.findByIdAndDelete(req.params.id);
 
