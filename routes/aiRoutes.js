@@ -154,16 +154,7 @@ router.post("/ask", async (req, res) => {
 
     return res.json({
       answer,
-      recommendedDoctors: recommendedDoctors.map((doctor) => ({
-        id: doctor._id,
-        fullName: `${doctor.name} ${doctor.lastName}`,
-        contact: {
-          email: doctor.email,
-          phone: doctor.phoneNumber,
-        },
-        fees: doctor.consultationFees,
-        respondTime: doctor.respondTime || 0,
-      })),
+      recommendedDoctors,
       specialityMatched: specialityTitle || "General",
     });
   } catch (error) {
