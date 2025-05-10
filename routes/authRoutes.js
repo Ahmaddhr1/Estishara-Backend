@@ -153,6 +153,7 @@ router.post("/doctor/register", async (req, res) => {
 
     // Then populate the saved doctor
     const populatedDoctor = await Doctor.findById(savedDoctor._id)
+      .select("-prescriptionsSent")
       .populate("specialityId", "title")
       .populate({
         path: "pendingConsultations",
@@ -227,6 +228,7 @@ router.post("/refresh-token", async (req, res) => {
       let user;
       if (role === "doctor") {
         user = await Doctor.findById(id)
+          .select("-prescriptionsSent")
           .populate("specialityId")
           .populate({ path: "pendingConsultations", select: "status" })
           .populate({ path: "acceptedConsultations", select: "status" })
@@ -235,6 +237,7 @@ router.post("/refresh-token", async (req, res) => {
           .populate({ path: "notificationsRecieved", select: "title" });
       } else {
         user = await Patient.findById(id)
+          .select("-prescriptionsRecieved")
           .populate({ path: "historyConsultations", select: "status" })
           .populate({ path: "requestedConsultations", select: "status" })
           .populate({ path: "ongoingConsultation", select: "status" })
@@ -306,11 +309,10 @@ router.post("/patient/register", async (req, res) => {
       fcmToken,
     });
 
-  
     const savedPatient = await newPatient.save();
 
-    
     const populatedPatient = await Patient.findById(savedPatient._id)
+      .select("-prescriptionsRecieved")
       .populate({
         path: "historyConsultations",
         select: "status",
@@ -370,6 +372,7 @@ router.post("/login", async (req, res) => {
 
     // Check Patient first
     let user = await Patient.findOne({ email: emailNormalized })
+      .select("-prescriptionsRecieved")
       .populate({ path: "historyConsultations", select: "status" })
       .populate({ path: "requestedConsultations", select: "status" })
       .populate({ path: "ongoingConsultation", select: "status" })
@@ -380,6 +383,7 @@ router.post("/login", async (req, res) => {
     // If not patient, check Doctor
     if (!user) {
       user = await Doctor.findOne({ email: emailNormalized })
+        .select("-prescriptionsSent")
         .populate("specialityId")
         .populate({ path: "pendingConsultations", select: "status" })
         .populate({ path: "acceptedConsultations", select: "status" })
@@ -514,6 +518,7 @@ router.post("/verify-token", async (req, res) => {
       let user;
       if (role === "doctor") {
         user = await Doctor.findById(id)
+          .select("-prescriptionsSent")
           .populate("specialityId")
           .populate({
             path: "pendingConsultations",
@@ -540,6 +545,7 @@ router.post("/verify-token", async (req, res) => {
         });
       } else if (role === "patient") {
         user = await Patient.findById(id)
+          .select("-prescriptionsRecieved")
           .populate({
             path: "historyConsultations",
             select: "status",

@@ -4,12 +4,10 @@ const Patient = require("../models/Patient");
 const Prescription = require("../models/Prescription");
 const router = express.Router();
 
-// Route to get all prescriptions sent (for Doctor) or received (for Patient)
+
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
-
   try {
-    
     const doctor = await Doctor.findById(id).populate("prescriptionsSent");
     const patient = await Patient.findById(id).populate("prescriptionsRecieved");
 
@@ -41,8 +39,8 @@ router.get("/prescription/:prescriptionId", async (req, res) => {
   try {
     // Find the prescription by ID and populate related fields (Doctor and Patient)
     const prescription = await Prescription.findById(prescriptionId)
-      .populate("patient", "name email") // Populate patient details (name and email)
-      .populate("doctor", "name email"); // Populate doctor details (name and email)
+      .populate("patient", "name email") 
+      .populate("doctor", "name email"); 
 
     if (!prescription) {
       return res.status(404).json({ message: "Prescription not found" });

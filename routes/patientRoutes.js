@@ -32,6 +32,7 @@ router.get("/", authenticateToken, async (req, res) => {
     }
 
     const patients = await Patient.find(query)
+      .select("-prescriptionsRecieved")
       .populate({
         path: "requestedConsultations",
         select: "status",
@@ -58,6 +59,7 @@ router.get("/", authenticateToken, async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const patient = await Patient.findById(req.params.id)
+      .select("-prescriptionsRecieved")
       .populate({
         path: "requestedConsultations",
         select: "status",
@@ -151,6 +153,7 @@ router.get("/getrc/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const patient = await Patient.findById(id)
+      .select("-prescriptionsRecieved")
       .populate({
         path: "requestedConsultations",
         populate: {
@@ -207,6 +210,7 @@ router.get("/gethc/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const patient = await Patient.findById(id)
+      .select("-prescriptionsRecieved")
       .populate({
         path: "historyConsultations",
         populate: {
@@ -263,6 +267,7 @@ router.get("/getac/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const patient = await Patient.findById(id)
+      .select("-prescriptionsRecieved")
       .populate({
         path: "historyConsultations",
         populate: {
@@ -319,6 +324,7 @@ router.get("/getoc/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const patient = await Patient.findById(id)
+      .select("-prescriptionsRecieved")
       .populate({
         path: "historyConsultations",
         populate: {

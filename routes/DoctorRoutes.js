@@ -15,6 +15,7 @@ const Notification = require("../models/Notification");
 router.get("/", async (req, res) => {
   try {
     const doctors = await Doctor.find({ isPendingDoctor: false })
+      .select("-prescriptionsSent")
       .populate("specialityId")
       .populate({
         path: "pendingConsultations",
@@ -57,6 +58,7 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
     }
 
     const doctors = await Doctor.find(query)
+      .select("-prescriptionsSent")
       .populate("specialityId", "title")
       .populate({
         path: "pendingConsultations",
@@ -115,6 +117,7 @@ router.get("/search", authenticateToken, async (req, res) => {
       isPendingDoctor: false,
     };
     const doctors = await Doctor.find(query)
+      .select("-prescriptionsSent")
       .populate("specialityId", "title")
       .populate({
         path: "pendingConsultations",
@@ -143,7 +146,7 @@ router.get("/search", authenticateToken, async (req, res) => {
 router.get("/topten", async (req, res) => {
   try {
     const topDoctors = await Doctor.find({ isPendingDoctor: false })
-      .select("-password")
+      .select("-password -prescriptionsSent")
       .sort({ recommendedBy: -1 })
       .limit(10)
       .populate("specialityId", "title")
@@ -172,6 +175,7 @@ router.get("/topten", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.params.id)
+      .select("-prescriptionsSent")
       .populate("specialityId")
       .populate({
         path: "pendingConsultations",
@@ -378,6 +382,7 @@ router.get("/getpc/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const doctor = await Doctor.findById(id)
+      .select("-prescriptionsSent")
       .populate({
         path: "pendingConsultations",
         populate: {
@@ -426,6 +431,7 @@ router.get("/getac/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const doctor = await Doctor.findById(id)
+      .select("-prescriptionsSent")
       .populate({
         path: "acceptedConsultations",
         populate: {
@@ -473,6 +479,7 @@ router.get("/gethc/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const doctor = await Doctor.findById(id)
+      .select("-prescriptionsSent")
       .populate({
         path: "acceptedConsultations",
         populate: {
@@ -520,6 +527,7 @@ router.get("/getoc/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const doctor = await Doctor.findById(id)
+      .select("-prescriptionsSent")
       .populate({
         path: "acceptedConsultations",
         populate: {
