@@ -118,7 +118,7 @@ router.post("/ask", async (req, res) => {
           specialityId: speciality._id,
           isPendingDoctor: false,
         })
-          .select("name lastName email phoneNumber consultationFees")
+          .select("name lastName email phoneNumber consultationFees respondTime")
           .limit(5);
       }
     }
@@ -133,7 +133,7 @@ router.post("/ask", async (req, res) => {
           phone: doctor.phoneNumber,
         },
         fees: doctor.consultationFees,
-        respondTime: doctor.respondTime,
+        respondTime: doctor.respondTime || 0,
       })),
       specialityMatched: specialityTitle || "General",
     });

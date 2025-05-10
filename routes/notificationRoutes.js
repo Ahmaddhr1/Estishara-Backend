@@ -158,4 +158,16 @@ router.post("/send-notification", async (req, res) => {
       .json({ error: "Failed to send notification " + error.message });
   }
 });
+
+// router.post("/request-call",async(req,res)=> {
+//   const {patientId , doctorId} = req.body;
+//   const patient =  await Patient.findById(patientId).select("fcmToken name lastName");
+//   const doctor = await Doctor.findById(doctorId).select("name lastName");
+
+//   const fcmToken = patient.fcmToken;
+
+
+
+// })
+
 module.exports = router;
