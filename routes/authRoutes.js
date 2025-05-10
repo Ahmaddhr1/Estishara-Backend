@@ -306,10 +306,10 @@ router.post("/patient/register", async (req, res) => {
       fcmToken,
     });
 
-    // First save the patient
+  
     const savedPatient = await newPatient.save();
 
-    // Then populate if needed (though for a new patient, these will likely be empty)
+    
     const populatedPatient = await Patient.findById(savedPatient._id)
       .populate({
         path: "historyConsultations",
