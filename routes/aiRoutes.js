@@ -118,7 +118,7 @@ router.post("/ask", async (req, res) => {
           specialityId: speciality._id,
           isPendingDoctor: false,
         })
-          .limit(5)
+          .limit(5).select("-prescriptionsSent")
           .populate({
             path: "pendingConsultations",
             populate: {
