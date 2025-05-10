@@ -6,14 +6,18 @@ const Speciality = require("../models/Speciality");
 
 const getResponseFromGemini = async (prompt) => {
   try {
-      const aiResponse = await axios.post(
+    const aiResponse = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }]
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt,
+              },
+            ],
+          },
+        ],
       },
       {
         headers: {
@@ -22,10 +26,14 @@ const getResponseFromGemini = async (prompt) => {
       }
     );
 
-    const responseText = aiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const responseText =
+      aiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text;
     return responseText || null;
   } catch (error) {
-    console.error("Gemini AI Error:", error.response ? error.response.data : error.message);
+    console.error(
+      "Gemini AI Error:",
+      error.response ? error.response.data : error.message
+    );
     return null;
   }
 };
@@ -37,7 +45,7 @@ const isMedicalQuestion = async (question) => {
   Question: ${question}
   
   Answer:`;
-  
+
   const response = await getResponseFromGemini(prompt);
   return response?.trim().toUpperCase() === "YES";
 };
@@ -45,22 +53,29 @@ const isMedicalQuestion = async (question) => {
 const getSpecialityFromQuestion = async (question) => {
   const prompt = `Analyze this medical question and respond with ONLY the most relevant medical specialty title from this exact list:
   - Cardiologist
+  - Dentist
+  - Pulmonologist
+  - Hepatologist
+  - Psychologist
   - Dermatologist
   - Endocrinologist
   - Gastroenterologist
   - Neurologist
   - Oncologist
   - Pediatrician
-  - Psychiatrist
   - Radiologist
   - Surgeon
+
+
+
+
   
   Important: Return ONLY the exact specialty title from the list above.
   
   Question: ${question}
   
   Specialty:`;
-  
+
   const response = await getResponseFromGemini(prompt);
   return response?.trim();
 };
@@ -74,10 +89,10 @@ router.post("/ask", async (req, res) => {
     // Check if medical question
     const isMedical = await isMedicalQuestion(question);
     if (!isMedical) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: "This service only answers medical and health-related questions",
         answer: null,
-        recommendedDoctors: []
+        recommendedDoctors: [],
       });
     }
 
@@ -91,40 +106,37 @@ router.post("/ask", async (req, res) => {
 
     // Get matching specialty
     const specialityTitle = await getSpecialityFromQuestion(question);
-    
-   
+
     let recommendedDoctors = [];
     if (specialityTitle) {
-      
-      const speciality = await Speciality.findOne({ 
-        title: { $regex: new RegExp(`^${specialityTitle}$`, "i") } 
+      const speciality = await Speciality.findOne({
+        title: { $regex: new RegExp(`^${specialityTitle}$`, "i") },
       });
 
       if (speciality) {
-        recommendedDoctors = await Doctor.find({ 
+        recommendedDoctors = await Doctor.find({
           specialityId: speciality._id,
-          isPendingDoctor: false
+          isPendingDoctor: false,
         })
-        .select('name lastName email phoneNumber consultationFees')
-        .limit(5); 
+          .select("name lastName email phoneNumber consultationFees")
+          .limit(5);
       }
     }
 
     return res.json({
       answer,
-      recommendedDoctors: recommendedDoctors.map(doctor => ({
-        id:doctor._id,
+      recommendedDoctors: recommendedDoctors.map((doctor) => ({
+        id: doctor._id,
         fullName: `${doctor.name} ${doctor.lastName}`,
         contact: {
           email: doctor.email,
-          phone: doctor.phoneNumber
+          phone: doctor.phoneNumber,
         },
         fees: doctor.consultationFees,
-        workplace: doctor.workingAt,
+        respondTime: doctor.respondTime,
       })),
-      specialityMatched: specialityTitle || "General"
+      specialityMatched: specialityTitle || "General",
     });
-
   } catch (error) {
     console.error("Error:", error.message);
     res.status(500).json({ error: "Something went wrong. Try again later." });
