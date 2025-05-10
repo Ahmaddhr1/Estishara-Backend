@@ -144,6 +144,14 @@ const doctorSchema = new Schema(
       ref: "Prescription",
       default: [],
     },
+    payoutAccountNumber: {
+      type: String,
+    },
+    preferredPayoutMethod: {
+      type: String,
+      enum: ["bank", "paypal", "western_union", "other"],
+      default: "bank",
+    },
   },
   { timestamps: true }
 );

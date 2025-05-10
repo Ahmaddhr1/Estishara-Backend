@@ -24,10 +24,16 @@ const consultationSchema = new Schema(
       required: true,
     },
     paymentDetails: {
-      transactionRef: { type: String },
-      amountPaid: { type: Number },
-      platformCut: { type: Number },
-      paidToDoctor: { type: Number },
+      transactionRef: String,
+      amountPaid: Number,
+      platformCut: Number,
+      paidToDoctor: Number,
+      payoutStatus: {
+        type: String,
+        enum: ["pending", "sent"],
+        default: "pending",
+      },
+      payoutDate: Date,
     },
   },
   { timestamps: true }

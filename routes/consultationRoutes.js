@@ -7,6 +7,7 @@ const Doctor = require("../models/Doctor");
 const authenticateToken = require("../utils/middleware");
 const messaging = require("../config/firebaseConfig");
 const Notification = require("../models/Notification.js");
+const PlatformStats = require("../models/PlatformStats.js");
 const router = express.Router();
 dotenv.config();
 
@@ -58,10 +59,14 @@ router.post("/request", async (req, res) => {
     };
     const response = await messaging?.send(message);
 
-    res.status(201).json({ message: "Consultation created", consultation,response });
+    res
+      .status(201)
+      .json({ message: "Consultation created", consultation, response });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error creating consultation"+err.message });
+    res
+      .status(500)
+      .json({ message: "Error creating consultation" + err.message });
   }
 });
 
@@ -72,7 +77,7 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
       .populate("doctorId")
       .populate("patientId");
     const patient = await Patient.findById(consultation.patientId);
-    console.log(consultation.doctorId)
+    console.log(consultation.doctorId);
     if (!consultation) {
       return res.status(404).json({ message: "Consultation not found!" });
     }
@@ -106,7 +111,7 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
     });
 
     await notification.save();
-    patient.notificationsRecieved.push(notification._id)
+    patient.notificationsRecieved.push(notification._id);
     const fcmToken = patient?.fcmToken;
 
     const message = {
@@ -242,6 +247,8 @@ router.post("/paytabs/callback", async (req, res) => {
       amountPaid: fullAmount,
       platformCut,
       paidToDoctor,
+      payoutStatus: "pending",
+      payoutDate: null,
     };
 
     if (!doctor.acceptedConsultations.includes(consultation._id)) {
@@ -263,6 +270,18 @@ router.post("/paytabs/callback", async (req, res) => {
     await consultation.save();
     await doctor.save();
     await patient.save();
+
+    const platformStats = await PlatformStats.findOne();
+    if (platformStats) {
+      platformStats.totalPlatformCut += platformCut;
+      platformStats.totalTransactions += 1;
+      await platformStats.save();
+    } else {
+      await PlatformStats.create({
+        totalPlatformCut: platformCut,
+        totalTransactions: 1,
+      });
+    }
 
     const existingNotification = await Notification.findOne({
       consultationId: consultation._id,
@@ -302,6 +321,27 @@ router.post("/paytabs/callback", async (req, res) => {
   }
 });
 
+router.get("/consultation/payouts/pending", async (req, res) => {
+  try {
+    const consultationsToPay = await Consultation.find({
+      status: "paid",
+      "paymentDetails.payoutStatus": "pending",
+    })
+      .populate({
+        path: "doctorId",
+        select: "name lastName payoutAccountNumber preferredPayoutMethod",
+      })
+      .populate({
+        path: "patientId",
+        select: "name lastName",
+      });
+    res.status(200).json({ consultations: consultationsToPay });
+  } catch (error) {
+    console.error("Error fetching unpaid consultations:", error.message);
+    res.status(500).json({ error: "Failed to fetch consultations" });
+  }
+});
+
 router.put("/start/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -338,7 +378,6 @@ router.put("/start/:id", async (req, res) => {
       { _id: patient._id },
       { $pull: { acceptedConsultations: consultation._id } }
     );
-    
 
     doctor.ongoingConsultation = consultation._id;
     patient.ongoingConsultation = consultation._id;
@@ -349,7 +388,7 @@ router.put("/start/:id", async (req, res) => {
     consultation.status = "ongoing";
     await consultation.save();
 
-    const fcmToken= patient?.fcmToken
+    const fcmToken = patient?.fcmToken;
     const message = {
       notification: {
         title: "Consultation Started!",
@@ -439,7 +478,7 @@ router.put("/cancel/:id", async (req, res) => {
     });
     await notification.save();
 
-    doctor.notificationsRecieved.push(notification?._id)
+    doctor.notificationsRecieved.push(notification?._id);
     const fcmToken = await doctor?.fcmToken;
 
     const message = {
@@ -475,7 +514,7 @@ router.delete("/all", async (req, res) => {
           acceptedConsultations: [],
           pendingConsultations: [],
           historyConsultations: [],
-          notificationsRecieved:[]
+          notificationsRecieved: [],
         },
       }
     );
@@ -488,7 +527,7 @@ router.delete("/all", async (req, res) => {
           requestedConsultations: [],
           acceptedConsultations: [],
           historyConsultations: [],
-          notificationsRecieved:[]
+          notificationsRecieved: [],
         },
       }
     );
