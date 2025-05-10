@@ -118,8 +118,37 @@ router.post("/ask", async (req, res) => {
           specialityId: speciality._id,
           isPendingDoctor: false,
         })
-          .select("name lastName email phoneNumber consultationFees respondTime")
-          .limit(5);
+          .limit(5)
+          .populate({
+            path: "pendingConsultations",
+            populate: {
+              path: "patientId",
+              select: "name lastName profilePic email",
+            },
+          })
+          .populate("specialityId", "title")
+          .populate({
+            path: "acceptedConsultations",
+            populate: {
+              path: "patientId",
+              select: "name lastName profilePic email",
+            },
+          })
+          .populate({
+            path: "historyConsultations",
+            populate: {
+              path: "patientId",
+              select: "name lastName profilePic email",
+            },
+          })
+          .populate({
+            path: "ongoingConsultation",
+            populate: {
+              path: "patientId",
+              select: "name lastName profilePic email",
+            },
+          })
+          .populate({ path: "notificationsRecieved", select: "title" });
       }
     }
 
