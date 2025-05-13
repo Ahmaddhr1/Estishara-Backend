@@ -252,7 +252,7 @@ router.post("/paytabs/callback", async (req, res) => {
     const paidToDoctor = fullAmount - platformCut;
 
     if (consultation.status === "paid") {
-      return res.status(200).json({ message: "Payment already processed" });
+      return res.status(200).json({ error: "Payment already processed" });
     }
 
     consultation.status = "paid";
