@@ -335,7 +335,7 @@ router.post("/paytabs/callback", async (req, res) => {
   }
 });
 
-router.get("/consultation/payouts/pending", async (req, res) => {
+router.get("/payouts/pending", async (req, res) => {
   try {
     const consultationsToPay = await Consultation.find({
       status: "paid",
