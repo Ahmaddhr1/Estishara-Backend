@@ -43,11 +43,11 @@ router.get("/", async (req, res) => {
 
 router.get("/search-filter", authenticateToken, async (req, res) => {
   try {
-    const { responseTime, specialityId, minFee, maxFee } = req.query;
+    const { respondTime, specialityId, minFee, maxFee } = req.query;
 
     const query = { isPendingDoctor: false };
 
-    if (responseTime) query.responseTime = { $lte: responseTime };
+    if (respondTime) query.responseTime = { $lte: respondTime };
     if (specialityId) query.specialityId = specialityId;
     if (minFee || maxFee) {
       query.consultationFee = {};
