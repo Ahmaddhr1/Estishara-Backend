@@ -169,8 +169,9 @@ router.post(
           path: "patientId",
           select: "name lastName email phoneNumber",
         });
-
-      if (req.user.id != consultation.patientId) {
+      console.log("req id:"+req.user.id)
+      console.log("req id:"+consultation.patientId._id)
+      if (req.user.id != consultation.patientId._id) {
         return res
           .status(401)
           .json({ message: "Forbidden, You cant pay for this consultation!" });
@@ -521,11 +522,11 @@ router.put("/cancel/:id", async (req, res) => {
 
 router.delete("/delete-all", async (req, res) => {
   try {
-    console.log("HITTTTTTTTTTTTTT")
-    await Consultation.deleteMany({});
-    await Notification.deleteMany({});
+    const consultationsDeleted = await Consultation.deleteMany({});
+    const notificationsDeleted = await Notification.deleteMany({});
 
-    await Doctor.updateMany(
+    // Updating Doctor collection
+    const doctorsUpdated = await Doctor.updateMany(
       {},
       {
         $set: {
@@ -538,7 +539,8 @@ router.delete("/delete-all", async (req, res) => {
       }
     );
 
-    await Patient.updateMany(
+    // Updating Patient collection
+    const patientsUpdated = await Patient.updateMany(
       {},
       {
         $set: {
@@ -551,13 +553,22 @@ router.delete("/delete-all", async (req, res) => {
       }
     );
 
-    return res
-      .status(200)
-      .json({ message: "All consultations deleted successfully!" });
+    // Check if everything was deleted and updated
+    if (
+      consultationsDeleted.deletedCount > 0 &&
+      notificationsDeleted.deletedCount > 0 &&
+      doctorsUpdated.modifiedCount > 0 &&
+      patientsUpdated.modifiedCount > 0
+    ) {
+      return res.status(200).json({ message: "All consultations deleted successfully!" });
+    } else {
+      return res.status(404).json({ error: "No consultations found to delete" });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 module.exports = router;
