@@ -14,8 +14,6 @@ dotenv.config();
 const profileID = process.env.PAYTABS_ID;
 const serverKey = process.env.PAYTABS_KEY;
 
-
-
 router.post("/request", async (req, res) => {
   try {
     const { patientId, doctorId } = req.body;
@@ -419,7 +417,7 @@ router.put("/end/:id", async (req, res) => {
     }
     consultation.duration = duration;
     consultation.status = "finished";
-    
+
     await consultation.save();
     const doctor = await Doctor.findById(consultation.doctorId);
     const patient = await Patient.findById(consultation.patientId);
@@ -502,69 +500,74 @@ router.put("/cancel/:id", async (req, res) => {
   }
 });
 
-// router.delete("/delete-all", async (req, res) => {
-//   try {
-//     const consultationsDeleted = await Consultation.deleteMany({});
-//     const notificationsDeleted = await Notification.deleteMany({});
+router.delete("/delete-all", async (req, res) => {
+  try {
+    const consultationsDeleted = await Consultation.deleteMany({});
+    const notificationsDeleted = await Notification.deleteMany({});
+    await PlatformStats.deleteMany({});
 
-//     // Updating Doctor collection
-//     const doctorsUpdated = await Doctor.updateMany(
-//       {},
-//       {
-//         $set: {
-//           ongoingConsultation: null,
-//           acceptedConsultations: [],
-//           pendingConsultations: [],
-//           historyConsultations: [],
-//           notificationsRecieved: [],
-//         },
-//       }
-//     );
+    // Updating Doctor collection
+    const doctorsUpdated = await Doctor.updateMany(
+      {},
+      {
+        $set: {
+          ongoingConsultation: null,
+          acceptedConsultations: [],
+          pendingConsultations: [],
+          historyConsultations: [],
+          notificationsRecieved: [],
+        },
+      }
+    );
 
-//     // Updating Patient collection
-//     const patientsUpdated = await Patient.updateMany(
-//       {},
-//       {
-//         $set: {
-//           ongoingConsultation: null,
-//           requestedConsultations: [],
-//           acceptedConsultations: [],
-//           historyConsultations: [],
-//           notificationsRecieved: [],
-//         },
-//       }
-//     );
+    // Updating Patient collection
+    const patientsUpdated = await Patient.updateMany(
+      {},
+      {
+        $set: {
+          ongoingConsultation: null,
+          requestedConsultations: [],
+          acceptedConsultations: [],
+          historyConsultations: [],
+          notificationsRecieved: [],
+        },
+      }
+    );
 
-//     // Check if everything was deleted and updated
-//     if (
-//       consultationsDeleted.deletedCount > 0 &&
-//       notificationsDeleted.deletedCount > 0 &&
-//       doctorsUpdated.modifiedCount > 0 &&
-//       patientsUpdated.modifiedCount > 0
-//     ) {
-//       return res
-//         .status(200)
-//         .json({ message: "All consultations deleted successfully!" });
-//     } else {
-//       return res
-//         .status(404)
-//         .json({ error: "No consultations found to delete" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ error: "Internal server error" });
-//   }
-// });
+    // Check if everything was deleted and updated
+    if (
+      consultationsDeleted.deletedCount > 0 &&
+      notificationsDeleted.deletedCount > 0 &&
+      doctorsUpdated.modifiedCount > 0 &&
+      patientsUpdated.modifiedCount > 0
+    ) {
+      return res
+        .status(200)
+        .json({ message: "All consultations deleted successfully!" });
+    } else {
+      return res
+        .status(404)
+        .json({ error: "No consultations found to delete" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 router.get("/payouts/pending", async (req, res) => {
   try {
     const consultationsToPay = await Consultation.find({
-      status: { $in: ["paid", "ongoing", "finished"], $nin: ["requested","accepted"] },
+      status: {
+        $in: ["paid", "ongoing", "finished"],
+        $nin: ["requested", "accepted"],
+      },
       "paymentDetails.payoutStatus": "pending",
     })
       .populate({
         path: "doctorId",
-        select: "name lastName consultationFees payoutAccountNumber preferredPayoutMethod",
+        select:
+          "name lastName consultationFees payoutAccountNumber preferredPayoutMethod phoneNumber",
       })
       .populate({
         path: "patientId",
@@ -574,6 +577,27 @@ router.get("/payouts/pending", async (req, res) => {
   } catch (error) {
     console.error("Error fetching unpaid consultations:", error.message);
     res.status(500).json({ error: "Failed to fetch consultations" });
+  }
+});
+
+router.put("/payout/:id", async (req, res) => {
+  try {
+    const consultationId = req.params.id;
+
+    const consultation = await Consultation.findById(consultationId);
+    if (!consultation) {
+      return res.status(404).json({ error: "Consultation not found" });
+    }
+
+    if (consultation.paymentDetails.payoutStatus === "sent") {
+      return res.status(400).json({ error: "Payout already sent" });
+    }
+    consultation.paymentDetails.payoutStatus = "sent";
+    await consultation.save();
+    return res.status(200).json({ message: "Payout status updated to 'sent'" });
+  } catch (error) {
+    console.error("Error updating payout status:", error.message);
+    return res.status(500).json({ error: "Failed to update payout status" });
   }
 });
 
