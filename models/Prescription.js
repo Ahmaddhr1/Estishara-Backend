@@ -15,7 +15,7 @@ const prescriptionSchema = new Schema(
     strength: String,
     form: String,
     direction: String,
-    quantity: String,
+    quantity: Number,
     diagnosis: String,
   },
   {

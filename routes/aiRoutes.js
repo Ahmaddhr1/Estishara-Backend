@@ -71,7 +71,6 @@ router.post("/ask", async (req, res) => {
   if (!question) return res.status(400).json({ error: "Question is required" });
 
   try {
-    // Check if medical question
     const isMedical = await isMedicalQuestion(question);
     if (!isMedical) {
       return res.status(400).json({
@@ -81,7 +80,6 @@ router.post("/ask", async (req, res) => {
       });
     }
 
-    // Get medical answer
     const medicalPrompt = `As a board-certified medical professional, provide a concise and accurate answer to this health question:
     ${question}`;
     const answer = await getResponseFromGemini(medicalPrompt);
@@ -89,9 +87,7 @@ router.post("/ask", async (req, res) => {
       return res.status(500).json({ error: "AI processing failed." });
     }
 
-    // Get matching specialty
     const specialityTitle = await getSpecialityFromQuestion(question);
-
     let recommendedDoctors = [];
     if (specialityTitle) {
       const speciality = await Speciality.findOne({
@@ -104,37 +100,8 @@ router.post("/ask", async (req, res) => {
           isPendingDoctor: false,
         })
           .limit(5)
-          .select("-prescriptionsSent")
-          .populate({
-            path: "pendingConsultations",
-            populate: {
-              path: "patientId",
-              select: "name lastName profilePic email",
-            },
-          })
+          .select("-notificationsRecieved -prescriptionsSent -pendingConsultations -acceptedConsultations -historyConsultations -ongoingConsultation")
           .populate("specialityId", "title")
-          .populate({
-            path: "acceptedConsultations",
-            populate: {
-              path: "patientId",
-              select: "name lastName profilePic email",
-            },
-          })
-          .populate({
-            path: "historyConsultations",
-            populate: {
-              path: "patientId",
-              select: "name lastName profilePic email",
-            },
-          })
-          .populate({
-            path: "ongoingConsultation",
-            populate: {
-              path: "patientId",
-              select: "name lastName profilePic email",
-            },
-          })
-          .populate({ path: "notificationsRecieved", select: "title" });
       }
     }
 
