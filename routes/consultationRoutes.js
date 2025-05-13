@@ -14,6 +14,28 @@ dotenv.config();
 const profileID = process.env.PAYTABS_ID;
 const serverKey = process.env.PAYTABS_KEY;
 
+router.get("/payouts/pending", async (req, res) => {
+  try {
+    const consultationsToPay = await Consultation.find({
+      status: "paid",
+      paymentDetails: { $exists: true, $ne: null },
+      "paymentDetails.payoutStatus": "pending",
+    })
+      .populate({
+        path: "doctorId",
+        select: "name lastName payoutAccountNumber preferredPayoutMethod",
+      })
+      .populate({
+        path: "patientId",
+        select: "name lastName",
+      });
+    res.status(200).json({ consultations: consultationsToPay });
+  } catch (error) {
+    console.error("Error fetching unpaid consultations:", error.message);
+    res.status(500).json({ error: "Failed to fetch consultations" });
+  }
+});
+
 router.post("/request", async (req, res) => {
   try {
     const { patientId, doctorId } = req.body;
@@ -335,28 +357,6 @@ router.post("/paytabs/callback", async (req, res) => {
   } catch (error) {
     console.error("Callback error:", error.message);
     res.status(500).send("Internal Server Error");
-  }
-});
-
-router.get("/payouts/pending", async (req, res) => {
-  try {
-    const consultationsToPay = await Consultation.find({
-      status: "paid",
-      paymentDetails: { $exists: true, $ne: null },
-      "paymentDetails.payoutStatus": "pending",
-    })
-      .populate({
-        path: "doctorId",
-        select: "name lastName payoutAccountNumber preferredPayoutMethod",
-      })
-      .populate({
-        path: "patientId",
-        select: "name lastName",
-      });
-    res.status(200).json({ consultations: consultationsToPay });
-  } catch (error) {
-    console.error("Error fetching unpaid consultations:", error.message);
-    res.status(500).json({ error: "Failed to fetch consultations" });
   }
 });
 
