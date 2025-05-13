@@ -17,8 +17,7 @@ const serverKey = process.env.PAYTABS_KEY;
 router.get("/payouts/pending", async (req, res) => {
   try {
     const consultationsToPay = await Consultation.find({
-      status: "paid",
-      paymentDetails: { $exists: true, $ne: null },
+      paymentDetails: { $exists: true },
       "paymentDetails.payoutStatus": "pending",
     })
       .populate({
@@ -29,6 +28,7 @@ router.get("/payouts/pending", async (req, res) => {
         path: "patientId",
         select: "name lastName",
       });
+      console.log(consultationsToPay)
     res.status(200).json({ consultations: consultationsToPay });
   } catch (error) {
     console.error("Error fetching unpaid consultations:", error.message);
@@ -438,8 +438,8 @@ router.put("/end/:id", async (req, res) => {
     }
     consultation.duration = duration;
     await consultation.save();
-    const doctor = consultation.doctorId;
-    const patient = consultation.patientId;
+    const doctor = await Doctor.findById(consultation.doctorId);
+    const patient =await Patient.findById(consultation.patientId) ;
 
     doctor.ongoingConsultation = null;
     patient.ongoingConsultation = null;
@@ -519,8 +519,9 @@ router.put("/cancel/:id", async (req, res) => {
   }
 });
 
-router.delete("/all", async (req, res) => {
+router.delete("/delete-all", async (req, res) => {
   try {
+    console.log("HITTTTTTTTTTTTTT")
     await Consultation.deleteMany({});
     await Notification.deleteMany({});
 
