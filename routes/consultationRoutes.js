@@ -17,7 +17,7 @@ const serverKey = process.env.PAYTABS_KEY;
 router.get("/payouts/pending", async (req, res) => {
   try {
     const consultationsToPay = await Consultation.find({
-      paymentDetails: { $exists: true },
+      status: { $in: ["paid", "ongoing", "finished"], $nin: ["requested"] },
       "paymentDetails.payoutStatus": "pending",
     })
       .populate({
@@ -28,7 +28,7 @@ router.get("/payouts/pending", async (req, res) => {
         path: "patientId",
         select: "name lastName",
       });
-      console.log(consultationsToPay)
+    console.log(consultationsToPay);
     res.status(200).json({ consultations: consultationsToPay });
   } catch (error) {
     console.error("Error fetching unpaid consultations:", error.message);
@@ -169,8 +169,8 @@ router.post(
           path: "patientId",
           select: "name lastName email phoneNumber",
         });
-      console.log("req id:"+req.user.id)
-      console.log("req id:"+consultation.patientId._id)
+      console.log("req id:" + req.user.id);
+      console.log("req id:" + consultation.patientId._id);
       if (req.user.id != consultation.patientId._id) {
         return res
           .status(401)
@@ -438,10 +438,11 @@ router.put("/end/:id", async (req, res) => {
       return res.status(404).json({ error: "Consultation not found!" });
     }
     consultation.duration = duration;
+    consultation.status = "finished";
     await consultation.save();
     const doctor = await Doctor.findById(consultation.doctorId);
-    const patient =await Patient.findById(consultation.patientId) ;
-    console.log(patient)
+    const patient = await Patient.findById(consultation.patientId);
+    console.log(patient);
     doctor.ongoingConsultation = null;
     patient.ongoingConsultation = null;
 
@@ -560,15 +561,18 @@ router.delete("/delete-all", async (req, res) => {
       doctorsUpdated.modifiedCount > 0 &&
       patientsUpdated.modifiedCount > 0
     ) {
-      return res.status(200).json({ message: "All consultations deleted successfully!" });
+      return res
+        .status(200)
+        .json({ message: "All consultations deleted successfully!" });
     } else {
-      return res.status(404).json({ error: "No consultations found to delete" });
+      return res
+        .status(404)
+        .json({ error: "No consultations found to delete" });
     }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 module.exports = router;

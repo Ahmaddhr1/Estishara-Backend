@@ -5,7 +5,7 @@ const consultationSchema = new Schema(
   {
     status: {
       type: String,
-      enum: ["requested", "accepted", "paid", "ongoing"],
+      enum: ["requested", "accepted", "paid", "ongoing","finished"],
       required: true,
       default: "requested",
     },
@@ -31,7 +31,6 @@ const consultationSchema = new Schema(
       payoutStatus: {
         type: String,
         enum: ["pending", "sent"],
-        default: "pending",
       },
       payoutDate: Date,
     },
