@@ -131,81 +131,95 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
   }
 });
 
-router.post("/paytabs/create/:consultationId", async (req, res) => {
-  try {
-    const consultation = await Consultation.findById(req.params.consultationId)
-      .populate({
-        path: "doctorId",
-        select: "name lastName consultationFees",
-      })
-      .populate({
-        path: "patientId",
-        select: "name lastName email phoneNumber",
-      });
+router.post("/paytabs/create/:consultationId",authenticateToken, async (req, res) => {
+    try {
+      const consultation = await Consultation.findById(
+        req.params.consultationId
+      )
+        .populate({
+          path: "doctorId",
+          select: "name lastName consultationFees",
+        })
+        .populate({
+          path: "patientId",
+          select: "name lastName email phoneNumber",
+        });
 
-    if (!consultation) {
-      return res
-        .status(404)
-        .json({ message: "Consultation, doctor, or patient not found" });
-    }
-
-    const doctor = consultation.doctorId;
-    const amount = doctor.consultationFees;
-    const patient = consultation.patientId;
-
-    const paymentRequest = {
-      profile_id: profileID,
-      tran_type: "sale",
-      tran_class: "ecom",
-      cart_id: `cons_${consultation._id}`,
-      cart_currency: "USD",
-      cart_amount: amount,
-      cart_description: `Consultation with Dr. ${doctor.name} ${doctor.lastName}`,
-      callback:
-        "https://estishara-backend.vercel.app/api/consultation/paytabs/callback",
-      return: "https://estishara-backend.vercel.app/",
-      customer_details: {
-        name: `${patient.name} ${patient.lastName}`,
-        email: patient.email,
-        phone: patient.phoneNumber.toString(),
-      },
-      billing_address: {
-        first_name: patient.name,
-        last_name: patient.lastName,
-        email: patient.email,
-        phone: patient.phoneNumber.toString(),
-        street1: "N/A",
-        city: "N/A",
-        state: "N/A",
-        zip: "00000",
-        country: "LB",
-      },
-      hide_shipping: true,
-      hide_billing: true,
-    };
-
-    // Make the PayTabs API request to create the payment link
-    const response = await axios.post(
-      "https://secure-global.paytabs.com/payment/request",
-      paymentRequest,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${serverKey}`,
-        },
+      if (req.user.id != consultation.patientId) {
+        return res
+          .status(401)
+          .json({ message: "Forbidden, You cant pay for this consultation!" });
       }
-    );
 
-    const paymentUrl = response.data.redirect_url;
-    res.json({ payment_url: paymentUrl });
-  } catch (err) {
-    console.error(
-      "PayTabs error:",
-      err.response ? err.response.data : err.message
-    );
-    res.status(500).json({ message: "Payment initialization failed" });
+      if (!consultation) {
+        return res
+          .status(404)
+          .json({ message: "Consultation, doctor, or patient not found" });
+      }
+      if (consultation.status !== "accepted") {
+        return res
+          .status(404)
+          .json({ message: "Consultation has not been accepted yet!" });
+      }
+
+      const doctor = consultation.doctorId;
+      const amount = doctor.consultationFees;
+      const patient = consultation.patientId;
+
+      const paymentRequest = {
+        profile_id: profileID,
+        tran_type: "sale",
+        tran_class: "ecom",
+        cart_id: `cons_${consultation._id}`,
+        cart_currency: "USD",
+        cart_amount: amount,
+        cart_description: `Consultation with Dr. ${doctor.name} ${doctor.lastName}`,
+        callback:
+          "https://estishara-backend.vercel.app/api/consultation/paytabs/callback",
+        return: "https://estishara-backend.vercel.app/",
+        customer_details: {
+          name: `${patient.name} ${patient.lastName}`,
+          email: patient.email,
+          phone: patient.phoneNumber.toString(),
+        },
+        billing_address: {
+          first_name: patient.name,
+          last_name: patient.lastName,
+          email: patient.email,
+          phone: patient.phoneNumber.toString(),
+          street1: "N/A",
+          city: "N/A",
+          state: "N/A",
+          zip: "00000",
+          country: "LB",
+        },
+        hide_shipping: true,
+        hide_billing: true,
+      };
+
+      // Make the PayTabs API request to create the payment link
+      const response = await axios.post(
+        "https://secure-global.paytabs.com/payment/request",
+        paymentRequest,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${serverKey}`,
+          },
+        }
+      );
+
+      const paymentUrl = response.data.redirect_url;
+      res.json({ payment_url: paymentUrl });
+    } catch (err) {
+      console.error(
+        "PayTabs error:",
+        err.response ? err.response.data : err.message
+      );
+      res.status(500).json({ message: "Payment initialization failed" });
+    }
   }
-});
+);
 
 // Payment callback (PayTabs server-to-server)
 router.post("/paytabs/callback", async (req, res) => {

@@ -100,17 +100,17 @@ router.post("/send-notification", async (req, res) => {
   try {
     let recipient;
 
-    // First, attempt to find the recipient as a Doctor
+    
     recipient = await Doctor.findById(otherUserId);
     console.log("Recipient found (Doctor):", recipient);
 
-    // If not found as a Doctor, attempt to find the recipient as a Patient
+    
     if (!recipient) {
       recipient = await Patient.findById(otherUserId);
       console.log("Recipient found (Patient):", recipient);
     }
 
-    // If no recipient is found or the FCM token is missing, return an error
+    
     if (!recipient || !recipient.fcmToken) {
       console.error("FCM token not found for recipient");
       return res.status(400).send("FCM token not found for recipient");
@@ -119,12 +119,12 @@ router.post("/send-notification", async (req, res) => {
     const fcmToken = recipient.fcmToken;
     console.log("FCM Token:", fcmToken);
 
-    // Get the sender's details (currentUserId)
+    
     let sender;
     if (recipient instanceof Patient) {
-      sender = await Doctor.findById(currentUserId); // If recipient is a patient, sender is a doctor
+      sender = await Doctor.findById(currentUserId); 
     } else if (recipient instanceof Doctor) {
-      sender = await Patient.findById(currentUserId); // If recipient is a doctor, sender is a patient
+      sender = await Patient.findById(currentUserId); 
     }
 
     // If sender details are missing, return an error
@@ -139,13 +139,12 @@ router.post("/send-notification", async (req, res) => {
     const payload = {
       notification: {
         title: "New Message",
-        body: `${sender.name} ${sender.lastName}: ${message}`, // Include sender's name
+        body: `${sender.name} ${sender.lastName}: ${message}`, 
       },
       token: fcmToken,
     };
     console.log("Payload:", payload);
 
-    // Send the notification via Firebase
     console.log("Sending the notification...");
     const response = await messaging?.send(payload);
     console.log("Notification sent successfully:", response);
