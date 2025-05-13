@@ -10,8 +10,6 @@ const Consultation = require("../models/Consultation");
 const messaging = require("../config/firebaseConfig");
 const Notification = require("../models/Notification");
 
-// Utility to remove password from doctor object
-
 router.get("/", async (req, res) => {
   try {
     const doctors = await Doctor.find({ isPendingDoctor: false })
@@ -49,12 +47,12 @@ router.get("/search-filter", authenticateToken, async (req, res) => {
 
     const query = { isPendingDoctor: false };
 
-    if (responseTime) query.responseTime = { $lte: parseInt(responseTime) };
+    if (responseTime) query.responseTime = { $lte: responseTime };
     if (specialityId) query.specialityId = specialityId;
     if (minFee || maxFee) {
       query.consultationFee = {};
-      if (minFee) query.consultationFee.$gte = parseFloat(minFee);
-      if (maxFee) query.consultationFee.$lte = parseFloat(maxFee);
+      if (minFee) query.consultationFee.$gte = minFee;
+      if (maxFee) query.consultationFee.$lte = maxFee;
     }
 
     const doctors = await Doctor.find(query)

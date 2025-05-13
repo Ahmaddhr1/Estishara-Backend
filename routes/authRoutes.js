@@ -12,7 +12,7 @@ dotenv.config();
 
 const router = express.Router();
 
-// ✅ Function to generate both access and refresh tokens
+
 const generateTokens = (user) => {
   const secretKey = process.env.JWT_SECRET || "defaultSecret";
   const uniqueAddition = uuidv4();

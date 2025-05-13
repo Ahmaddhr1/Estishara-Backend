@@ -51,29 +51,14 @@ const isMedicalQuestion = async (question) => {
 };
 
 const getSpecialityFromQuestion = async (question) => {
-  const prompt = `Analyze this medical question and respond with ONLY the most relevant medical specialty title from this exact list:
-  - Cardiologist
-  - Dentist
-  - Pulmonologist
-  - Hepatologist
-  - Psychologist
-  - Dermatologist
-  - Endocrinologist
-  - Gastroenterologist
-  - Neurologist
-  - Oncologist
-  - Pediatrician
-  - Radiologist
-  - Surgeon
-
-
-
-
-  
-  Important: Return ONLY the exact specialty title from the list above.
-  
-  Question: ${question}
-  
+  const specialites = await Speciality.find({});
+  if (!specialites) {
+    return "Specialites Not Found!";
+  }
+  const prompt = `Analyze this medical question and respond with ONLY the most relevant medical specialty title from this exact list:\n
+  ${specialites.map((speciality) => `- ${speciality.title}`).join("\n")}\n
+  Important: Return ONLY the exact specialty title from the list above.\n
+  Question: ${question}\n
   Specialty:`;
 
   const response = await getResponseFromGemini(prompt);
@@ -118,7 +103,8 @@ router.post("/ask", async (req, res) => {
           specialityId: speciality._id,
           isPendingDoctor: false,
         })
-          .limit(5).select("-prescriptionsSent")
+          .limit(5)
+          .select("-prescriptionsSent")
           .populate({
             path: "pendingConsultations",
             populate: {
