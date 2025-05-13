@@ -131,7 +131,10 @@ router.delete("/cons/:id", authenticateToken, async (req, res) => {
   }
 });
 
-router.post("/paytabs/create/:consultationId",authenticateToken, async (req, res) => {
+router.post(
+  "/paytabs/create/:consultationId",
+  authenticateToken,
+  async (req, res) => {
     try {
       const consultation = await Consultation.findById(
         req.params.consultationId
@@ -339,6 +342,7 @@ router.get("/payouts/pending", async (req, res) => {
   try {
     const consultationsToPay = await Consultation.find({
       status: "paid",
+      paymentDetails: { $exists: true, $ne: null },
       "paymentDetails.payoutStatus": "pending",
     })
       .populate({
