@@ -440,7 +440,7 @@ router.put("/end/:id", async (req, res) => {
     await consultation.save();
     const doctor = await Doctor.findById(consultation.doctorId);
     const patient =await Patient.findById(consultation.patientId) ;
-
+    console.log(patient)
     doctor.ongoingConsultation = null;
     patient.ongoingConsultation = null;
 
