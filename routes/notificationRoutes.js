@@ -26,7 +26,7 @@ router.get("/:id", async (req, res) => {
           .json({ message: "No notifications found for this doctor" });
       }
 
-      notifications = notifications.reverse(); // Reverse here
+      notifications = notifications.reverse(); 
 
       return res.status(200).json(notifications);
     }
@@ -42,7 +42,7 @@ router.get("/:id", async (req, res) => {
           .json({ message: "No notifications found for this patient" });
       }
 
-      notifications = notifications.reverse(); // Reverse here
+      notifications = notifications.reverse();
 
       return res.status(200).json(notifications);
     }

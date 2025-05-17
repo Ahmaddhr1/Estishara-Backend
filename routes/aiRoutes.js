@@ -100,8 +100,9 @@ router.post("/ask", async (req, res) => {
           isPendingDoctor: false,
         })
           .limit(5)
-          .select("-notificationsRecieved -prescriptionsSent -pendingConsultations -acceptedConsultations -historyConsultations -ongoingConsultation")
           .populate("specialityId", "title")
+          .select("-password -notificationsRecieved -prescriptionsSent -pendingConsultations -acceptedConsultations -historyConsultations -ongoingConsultation")
+          
       }
     }
 
