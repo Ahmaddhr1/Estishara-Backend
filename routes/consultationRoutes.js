@@ -249,7 +249,7 @@ router.post("/paytabs/callback", async (req, res) => {
     }
 
     const fullAmount = doctor.consultationFees;
-    const platformCut = fullAmount * 0.2;
+    const platformCut = fullAmount * 0.06;
     const paidToDoctor = fullAmount - platformCut;
 
     if (consultation.status === "paid") {
