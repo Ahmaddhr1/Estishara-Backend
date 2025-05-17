@@ -16,6 +16,10 @@ const feedbackSchema = new Schema(
       type: mongoose.Types.ObjectId,
       ref: "Patient",
     },
+    isReport:{
+        type:Boolean,
+        default:false
+    }
   },
   { timestamps: true }
 );

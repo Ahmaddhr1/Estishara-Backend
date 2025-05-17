@@ -3,8 +3,8 @@ const Feedback = require("../models/Feedbacks");
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { stars, feedback, doctor, patient } = req.body;
-  const feedbackk = await new Feedback({ stars, feedback, doctor ,patient});
+  const { stars, feedback, doctor, patient,isReport } = req.body;
+  const feedbackk = await new Feedback({ stars, feedback, doctor ,patient,isReport});
   res.status(201).json({ message: "Feedback was Created"});
 });
 
