@@ -16,7 +16,7 @@ router.get("/:id", async (req, res) => {
     }
 
     if (doctor) {
-      const notifications = await Notification.find({
+      let notifications = await Notification.find({
         _id: { $in: doctor.notificationsRecieved },
       }).populate("receiver");
 
@@ -26,11 +26,13 @@ router.get("/:id", async (req, res) => {
           .json({ message: "No notifications found for this doctor" });
       }
 
+      notifications = notifications.reverse(); // Reverse here
+
       return res.status(200).json(notifications);
     }
 
     if (patient) {
-      const notifications = await Notification.find({
+      let notifications = await Notification.find({
         _id: { $in: patient.notificationsRecieved },
       }).populate("receiver");
 
@@ -39,6 +41,8 @@ router.get("/:id", async (req, res) => {
           .status(404)
           .json({ message: "No notifications found for this patient" });
       }
+
+      notifications = notifications.reverse(); // Reverse here
 
       return res.status(200).json(notifications);
     }
