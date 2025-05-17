@@ -67,7 +67,6 @@ router.get("/prescription/:prescriptionId", async (req, res) => {
   }
 });
 
-// Route to create a new prescription
 router.post("/", async (req, res) => {
   try {
     const {

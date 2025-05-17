@@ -14,6 +14,7 @@ const aiRoutes = require("../routes/aiRoutes.js");
 const prescriptionRoutes = require("../routes/prescriptionRoutes.js");
 const connectDB = require("../config/database.js");
 const messaging = require("../config/firebaseConfig.js");
+const feedbackRoutes = require("../routes/feedbackRoutes.js");
 
 try {
   connectDB();
@@ -33,6 +34,7 @@ app.use("/api/consultation", consultationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notification", notificationRoutes);
 app.use("/api/prescription", prescriptionRoutes);
+app.use("/api/feedback",feedbackRoutes);
 app.use("/api/ai", aiRoutes);
 
 app.get("/", (req, res) => {
