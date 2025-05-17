@@ -118,6 +118,7 @@ router.post("/doctor/register", async (req, res) => {
       fcmToken,
       otpToken,
       otpCode,
+      payoutAccountNumber
     } = req.body;
     const email1 = email.toLowerCase();
 
@@ -146,6 +147,7 @@ router.post("/doctor/register", async (req, res) => {
       lastName,
       specialityId,
       documents,
+      payoutAccountNumber
     });
 
     // First save the doctor
