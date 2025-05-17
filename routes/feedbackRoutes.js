@@ -1,10 +1,11 @@
 const express = require("express");
-const Feedback = require("../models/Feedbacks");
+const Feedback = require("../models/Feedback");
 const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { stars, feedback, doctor, patient,isReport } = req.body;
-  const feedbackk = await new Feedback({ stars, feedback, doctor ,patient,isReport});
+  const newFeedback = new Feedback({ stars, feedback, doctor ,patient,isReport});
+  await newFeedback.save();
   res.status(201).json({ message: "Feedback was Created"});
 });
 
