@@ -158,15 +158,6 @@ router.post("/send-notification", async (req, res) => {
   }
 });
 
-// router.post("/request-call",async(req,res)=> {
-//   const {patientId , doctorId} = req.body;
-//   const patient =  await Patient.findById(patientId).select("fcmToken name lastName");
-//   const doctor = await Doctor.findById(doctorId).select("name lastName");
 
-//   const fcmToken = patient.fcmToken;
-
-
-
-// })
 
 module.exports = router;
