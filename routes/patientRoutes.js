@@ -107,7 +107,8 @@ router.put("/:id", authenticateToken, async (req, res) => {
       })
       .populate({ path: "ongoingConsultation", select: "status" })
       .populate({ path: "acceptedConsultations", select: "status" })
-      .populate({ path: "notificationsRecieved", select: "title" });
+      .populate({ path: "notificationsRecieved", select: "title" })
+      .populate({ path: "prescriptionsRecieved", select: "medicationName" });
     if (!updatedPatient) {
       return res.status(404).json({ message: "Patient not found" });
     }
